@@ -22,8 +22,15 @@ package Sources
       annotation (Dialog(
         group="Table data definition",
         enable=tableOnFile,
-        loadSelector(filter="Text files (*.txt);;MATLAB MAT-files (*.mat)",
+        loadSelector(filter="Text files (*.txt);;MATLAB MAT-files (*.mat);;Comma-separated values files (*.csv)",
             caption="Open file in which table is present")));
+    parameter String delimiter="," "Column delimiter character for CSV file"
+      annotation (Dialog(
+        group="Table data definition",
+        enable=tableOnFile),
+        choices(choice=" " "Blank", choice="," "Comma", choice="\t" "Horizontal tabulator", choice=";" "Semicolon"));
+    parameter Integer nHeaderLines=0 "Number of header lines to ignore for CSV file"
+      annotation (Dialog(group="Table data definition",enable=tableOnFile));
     parameter Boolean verboseRead=true
       "= true, if info message that file is loading is to be printed"
       annotation (Dialog(group="Table data definition",enable=tableOnFile));
@@ -67,7 +74,7 @@ package Sources
       "Offsets of output signals";
     parameter ModelicaTableAdditions.Blocks.Types.ExternalCombiTimeTable tableID=
         ModelicaTableAdditions.Blocks.Types.ExternalCombiTimeTable(
-          if tableOnFile then tableName else "NoName",
+          if tableOnFile then if isCsvExt then "Values" else tableName else "NoName",
           if tableOnFile and fileName <> "NoName" and not Modelica.Utilities.Strings.isEmpty(fileName) then fileName else "NoName",
           table,
           startTime/timeScale,
@@ -76,15 +83,18 @@ package Sources
           extrapolation,
           shiftTime/timeScale,
           if smoothness == Modelica.Blocks.Types.Smoothness.LinearSegments then timeEvents elseif smoothness == Modelica.Blocks.Types.Smoothness.ConstantSegments then Modelica.Blocks.Types.TimeEvents.Always else Modelica.Blocks.Types.TimeEvents.NoTimeEvents,
-          if tableOnFile then verboseRead else false) "External table object";
+          if tableOnFile then verboseRead else false,
+          delimiter,
+          nHeaderLines) "External table object";
     discrete Modelica.SIunits.Time nextTimeEvent(start=0, fixed=true)
       "Next time event instant";
     discrete Real nextTimeEventScaled(start=0, fixed=true)
       "Next scaled time event instant";
     Real timeScaled "Scaled time";
+    final parameter Boolean isCsvExt = if tableOnFile then Modelica.Utilities.Strings.findLast(fileName, ".csv", caseSensitive=false) + 3 == Modelica.Utilities.Strings.length(fileName) else false;
   equation
     if tableOnFile then
-      assert(tableName <> "NoName",
+      assert(tableName <> "NoName" or isCsvExt,
         "tableOnFile = true and no table name given");
     else
       assert(size(table, 1) > 0 and size(table, 2) > 0,
@@ -334,6 +344,7 @@ MATLAB is a registered trademark of The MathWorks, Inc.
         fillColor={255,215,136},
         fillPattern=FillPattern.Solid,
         extent={{-48.0,-50.0},{2.0,70.0}}),
-      Line(points={{-48.0,-50.0},{-48.0,70.0},{52.0,70.0},{52.0,-50.0},{-48.0,-50.0},{-48.0,-20.0},{52.0,-20.0},{52.0,10.0},{-48.0,10.0},{-48.0,40.0},{52.0,40.0},{52.0,70.0},{2.0,70.0},{2.0,-51.0}})}));
+      Line(points={{-48.0,-50.0},{-48.0,70.0},{52.0,70.0},{52.0,-50.0},{-48.0,-50.0},{-48.0,-20.0},{52.0,-20.0},{52.0,10.0},{-48.0,10.0},{-48.0,40.0},{52.0,40.0},{52.0,70.0},{2.0,70.0},{2.0,-51.0}}),
+      Text(lineColor={0,0,255},extent={{-85,110},{85,65}},textString=DynamicSelect("csv", if isCsvExt then if delimiter == " " then "c s v" elseif delimiter == "," then "c,s,v" elseif delimiter == "\t" then "c\\ts\\tv" elseif delimiter == ";" then "c;s;v" else "csv" else ""))}));
   end CombiTimeTable;
 end Sources;

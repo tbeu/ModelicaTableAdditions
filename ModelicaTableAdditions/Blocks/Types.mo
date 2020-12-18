@@ -19,8 +19,10 @@ package Types
       input Modelica.SIunits.Time shiftTime=0.0;
       input Modelica.Blocks.Types.TimeEvents timeEvents=Modelica.Blocks.Types.TimeEvents.Always;
       input Boolean verboseRead=true "= true: Print info message; = false: No info message";
+      input String delimiter="," "Column delimiter character for CSV file";
+      input Integer nHeaderLines=0 "Number of header lines to ignore for CSV file";
       output ExternalCombiTimeTable externalCombiTimeTable;
-    external"C" externalCombiTimeTable = ModelicaTableAdditions_CombiTimeTable_init2(
+    external"C" externalCombiTimeTable = ModelicaTableAdditions_CombiTimeTable_init3(
             fileName,
             tableName,
             table,
@@ -33,14 +35,16 @@ package Types
             extrapolation,
             shiftTime,
             timeEvents,
-            verboseRead) annotation (LibraryDirectory="modelica://Modelica/Resources/Library", Include="#include \"ModelicaTableAdditions.c\"\n#include \"ModelicaIOAdditions.c\"", Library={"ModelicaMatIO", "zlib"});;
+            verboseRead,
+            delimiter,
+            nHeaderLines) annotation (LibraryDirectory="modelica://Modelica/Resources/Library", Include="#define TABLE_SHARE\n#include \"ModelicaTableAdditions.c\"\n#include \"ModelicaIOAdditions.c\"\n#undef TABLE_SHARE", Library={"ModelicaMatIO", "zlib"});
     end constructor;
 
     function destructor "Terminate 1-dim. table where first column is time"
       extends Modelica.Icons.Function;
       input ExternalCombiTimeTable externalCombiTimeTable;
     external"C" ModelicaTableAdditions_CombiTimeTable_close(
-        externalCombiTimeTable) annotation (LibraryDirectory="modelica://Modelica/Resources/Library", Include="#include \"ModelicaTableAdditions.c\"\n#include \"ModelicaIOAdditions.c\"", Library={"ModelicaMatIO", "zlib"});;
+        externalCombiTimeTable) annotation (LibraryDirectory="modelica://Modelica/Resources/Library", Include="#define TABLE_SHARE\n#include \"ModelicaTableAdditions.c\"\n#include \"ModelicaIOAdditions.c\"\n#undef TABLE_SHARE", Library={"ModelicaMatIO", "zlib"});
     end destructor;
 
   end ExternalCombiTimeTable;
@@ -69,14 +73,14 @@ package Types
             size(columns, 1),
             smoothness,
             extrapolation,
-            verboseRead) annotation (LibraryDirectory="modelica://Modelica/Resources/Library", Include="#include \"ModelicaTableAdditions.c\"\n#include \"ModelicaIOAdditions.c\"", Library={"ModelicaMatIO", "zlib"});;
+            verboseRead) annotation (LibraryDirectory="modelica://Modelica/Resources/Library", Include="#define TABLE_SHARE\n#include \"ModelicaTableAdditions.c\"\n#include \"ModelicaIOAdditions.c\"\n#undef TABLE_SHARE", Library={"ModelicaMatIO", "zlib"});
     end constructor;
 
     function destructor "Terminate 1-dim. table defined by matrix"
       extends Modelica.Icons.Function;
       input ExternalCombiTable1D externalCombiTable1D;
     external"C" ModelicaTableAdditions_CombiTable1D_close(externalCombiTable1D)
-        annotation (LibraryDirectory="modelica://Modelica/Resources/Library", Include="#include \"ModelicaTableAdditions.c\"\n#include \"ModelicaIOAdditions.c\"", Library={"ModelicaMatIO", "zlib"});;
+        annotation (LibraryDirectory="modelica://Modelica/Resources/Library", Include="#define TABLE_SHARE\n#include \"ModelicaTableAdditions.c\"\n#include \"ModelicaIOAdditions.c\"\n#undef TABLE_SHARE", Library={"ModelicaMatIO", "zlib"});
     end destructor;
 
   end ExternalCombiTable1D;
@@ -102,14 +106,14 @@ package Types
             size(table, 2),
             smoothness,
             extrapolation,
-            verboseRead) annotation (LibraryDirectory="modelica://Modelica/Resources/Library", Include="#include \"ModelicaTableAdditions.c\"\n#include \"ModelicaIOAdditions.c\"", Library={"ModelicaMatIO", "zlib"});;
+            verboseRead) annotation (LibraryDirectory="modelica://Modelica/Resources/Library", Include="#define TABLE_SHARE\n#include \"ModelicaTableAdditions.c\"\n#include \"ModelicaIOAdditions.c\"\n#undef TABLE_SHARE", Library={"ModelicaMatIO", "zlib"});
     end constructor;
 
     function destructor "Terminate 2-dim. table defined by matrix"
       extends Modelica.Icons.Function;
       input ExternalCombiTable2D externalCombiTable2D;
     external"C" ModelicaTableAdditions_CombiTable2D_close(externalCombiTable2D)
-        annotation (LibraryDirectory="modelica://Modelica/Resources/Library", Include="#include \"ModelicaTableAdditions.c\"\n#include \"ModelicaIOAdditions.c\"", Library={"ModelicaMatIO", "zlib"});;
+        annotation (LibraryDirectory="modelica://Modelica/Resources/Library", Include="#define TABLE_SHARE\n#include \"ModelicaTableAdditions.c\"\n#include \"ModelicaIOAdditions.c\"\n#undef TABLE_SHARE", Library={"ModelicaMatIO", "zlib"});
     end destructor;
 
   end ExternalCombiTable2D;

@@ -5,8 +5,8 @@ package Test "Test models"
     extends Modelica.Icons.Example;
     ModelicaTableAdditions.Blocks.Sources.CombiTimeTable combiTimeTable1(
       tableOnFile=true,
-      tableName="tab1",
-      fileName=Modelica.Utilities.Files.loadResource("modelica://ModelicaTableAdditions/Resources/Data/Tables/test.txt"),
+      fileName=Modelica.Utilities.Files.loadResource("modelica://ModelicaTableAdditions/Resources/Data/Tables/test.csv"),
+      nHeaderLines=1,
       columns={2})
       annotation (Placement(transformation(extent={{-40,60},{-20,80}})));
     Modelica.Blocks.Sources.CombiTimeTable combiTimeTable2(

@@ -1086,7 +1086,7 @@ MATLAB is a registered trademark of The MathWorks, Inc.
       input Boolean verboseRead = true
         "= true: Print info message; = false: No info message";
       external"C" readSuccess = ModelicaTableAdditions_CombiTimeTable_read(tableID, forceRead, verboseRead)
-        annotation (LibraryDirectory="modelica://Modelica/Resources/Library", Include="#include \"ModelicaTableAdditions.c\"\n#include \"ModelicaIOAdditions.c\"", Library={"ModelicaMatIO", "zlib"});
+        annotation (LibraryDirectory="modelica://Modelica/Resources/Library", Include="#define TABLE_SHARE\n#include \"ModelicaTableAdditions.c\"\n#include \"ModelicaIOAdditions.c\"\n#undef TABLE_SHARE", Library={"ModelicaMatIO", "zlib"});
       annotation(__ModelicaAssociation_Impure=true);
     end readTimeTableData;
 
@@ -1100,7 +1100,7 @@ MATLAB is a registered trademark of The MathWorks, Inc.
       discrete input Real pre_nextTimeEvent;
       output Real y;
       external"C" y = ModelicaTableAdditions_CombiTimeTable_getValue(tableID, icol, timeIn, nextTimeEvent, pre_nextTimeEvent)
-        annotation (LibraryDirectory="modelica://Modelica/Resources/Library", Include="#include \"ModelicaTableAdditions.c\"\n#include \"ModelicaIOAdditions.c\"", Library={"ModelicaMatIO", "zlib"});
+        annotation (LibraryDirectory="modelica://Modelica/Resources/Library", Include="#define TABLE_SHARE\n#include \"ModelicaTableAdditions.c\"\n#include \"ModelicaIOAdditions.c\"\n#undef TABLE_SHARE", Library={"ModelicaMatIO", "zlib"});
       annotation (derivative(
           noDerivative=nextTimeEvent,
           noDerivative=pre_nextTimeEvent) = getDerTimeTableValue);
@@ -1116,7 +1116,7 @@ MATLAB is a registered trademark of The MathWorks, Inc.
       discrete input Real pre_nextTimeEvent;
       output Real y;
       external"C" y = ModelicaTableAdditions_CombiTimeTable_getValue(tableID, icol, timeIn, nextTimeEvent, pre_nextTimeEvent)
-        annotation (LibraryDirectory="modelica://Modelica/Resources/Library", Include="#include \"ModelicaTableAdditions.c\"\n#include \"ModelicaIOAdditions.c\"", Library={"ModelicaMatIO", "zlib"});
+        annotation (LibraryDirectory="modelica://Modelica/Resources/Library", Include="#define TABLE_SHARE\n#include \"ModelicaTableAdditions.c\"\n#include \"ModelicaIOAdditions.c\"\n#undef TABLE_SHARE", Library={"ModelicaMatIO", "zlib"});
     end getTimeTableValueNoDer;
 
     function getDerTimeTableValue
@@ -1130,7 +1130,7 @@ MATLAB is a registered trademark of The MathWorks, Inc.
       input Real der_timeIn;
       output Real der_y;
       external"C" der_y = ModelicaTableAdditions_CombiTimeTable_getDerValue(tableID, icol, timeIn, nextTimeEvent, pre_nextTimeEvent, der_timeIn)
-        annotation (LibraryDirectory="modelica://Modelica/Resources/Library", Include="#include \"ModelicaTableAdditions.c\"\n#include \"ModelicaIOAdditions.c\"", Library={"ModelicaMatIO", "zlib"});
+        annotation (LibraryDirectory="modelica://Modelica/Resources/Library", Include="#define TABLE_SHARE\n#include \"ModelicaTableAdditions.c\"\n#include \"ModelicaIOAdditions.c\"\n#undef TABLE_SHARE", Library={"ModelicaMatIO", "zlib"});
     end getDerTimeTableValue;
 
     function getTimeTableTmin
@@ -1139,7 +1139,7 @@ MATLAB is a registered trademark of The MathWorks, Inc.
       input ModelicaTableAdditions.Blocks.Types.ExternalCombiTimeTable tableID;
       output Real timeMin "Minimum abscissa value in table";
       external"C" timeMin = ModelicaTableAdditions_CombiTimeTable_minimumTime(tableID)
-        annotation (LibraryDirectory="modelica://Modelica/Resources/Library", Include="#include \"ModelicaTableAdditions.c\"\n#include \"ModelicaIOAdditions.c\"", Library={"ModelicaMatIO", "zlib"});
+        annotation (LibraryDirectory="modelica://Modelica/Resources/Library", Include="#define TABLE_SHARE\n#include \"ModelicaTableAdditions.c\"\n#include \"ModelicaIOAdditions.c\"\n#undef TABLE_SHARE", Library={"ModelicaMatIO", "zlib"});
     end getTimeTableTmin;
 
     function getTimeTableTmax
@@ -1148,7 +1148,7 @@ MATLAB is a registered trademark of The MathWorks, Inc.
       input ModelicaTableAdditions.Blocks.Types.ExternalCombiTimeTable tableID;
       output Real timeMax "Maximum abscissa value in table";
       external"C" timeMax = ModelicaTableAdditions_CombiTimeTable_maximumTime(tableID)
-        annotation (LibraryDirectory="modelica://Modelica/Resources/Library", Include="#include \"ModelicaTableAdditions.c\"\n#include \"ModelicaIOAdditions.c\"", Library={"ModelicaMatIO", "zlib"});
+        annotation (LibraryDirectory="modelica://Modelica/Resources/Library", Include="#define TABLE_SHARE\n#include \"ModelicaTableAdditions.c\"\n#include \"ModelicaIOAdditions.c\"\n#undef TABLE_SHARE", Library={"ModelicaMatIO", "zlib"});
     end getTimeTableTmax;
 
     function readTable1DData "Read table data from text or MATLAB MAT-file"
@@ -1160,7 +1160,7 @@ MATLAB is a registered trademark of The MathWorks, Inc.
         "= true: Print info message; = false: No info message";
       output Real readSuccess "Table read success";
       external"C" readSuccess = ModelicaTableAdditions_CombiTable1D_read(tableID, forceRead, verboseRead)
-        annotation (LibraryDirectory="modelica://Modelica/Resources/Library", Include="#include \"ModelicaTableAdditions.c\"\n#include \"ModelicaIOAdditions.c\"", Library={"ModelicaMatIO", "zlib"});
+        annotation (LibraryDirectory="modelica://Modelica/Resources/Library", Include="#define TABLE_SHARE\n#include \"ModelicaTableAdditions.c\"\n#include \"ModelicaIOAdditions.c\"\n#undef TABLE_SHARE", Library={"ModelicaMatIO", "zlib"});
       annotation(__ModelicaAssociation_Impure=true);
     end readTable1DData;
 
@@ -1171,7 +1171,7 @@ MATLAB is a registered trademark of The MathWorks, Inc.
       input Real timeIn;
       output Real nextTimeEvent "Next time event in table";
       external"C" nextTimeEvent = ModelicaTableAdditions_CombiTimeTable_nextTimeEvent(tableID, timeIn)
-        annotation (LibraryDirectory="modelica://Modelica/Resources/Library", Include="#include \"ModelicaTableAdditions.c\"\n#include \"ModelicaIOAdditions.c\"", Library={"ModelicaMatIO", "zlib"});
+        annotation (LibraryDirectory="modelica://Modelica/Resources/Library", Include="#define TABLE_SHARE\n#include \"ModelicaTableAdditions.c\"\n#include \"ModelicaIOAdditions.c\"\n#undef TABLE_SHARE", Library={"ModelicaMatIO", "zlib"});
     end getNextTimeEvent;
 
     function getTable1DValue "Interpolate 1-dim. table defined by matrix"
@@ -1181,7 +1181,7 @@ MATLAB is a registered trademark of The MathWorks, Inc.
       input Real u;
       output Real y;
       external"C" y = ModelicaTableAdditions_CombiTable1D_getValue(tableID, icol, u)
-        annotation (LibraryDirectory="modelica://Modelica/Resources/Library", Include="#include \"ModelicaTableAdditions.c\"\n#include \"ModelicaIOAdditions.c\"", Library={"ModelicaMatIO", "zlib"});
+        annotation (LibraryDirectory="modelica://Modelica/Resources/Library", Include="#define TABLE_SHARE\n#include \"ModelicaTableAdditions.c\"\n#include \"ModelicaIOAdditions.c\"\n#undef TABLE_SHARE", Library={"ModelicaMatIO", "zlib"});
       annotation (derivative = getDerTable1DValue);
     end getTable1DValue;
 
@@ -1193,7 +1193,7 @@ MATLAB is a registered trademark of The MathWorks, Inc.
       input Real u;
       output Real y;
       external"C" y = ModelicaTableAdditions_CombiTable1D_getValue(tableID, icol, u)
-        annotation (LibraryDirectory="modelica://Modelica/Resources/Library", Include="#include \"ModelicaTableAdditions.c\"\n#include \"ModelicaIOAdditions.c\"", Library={"ModelicaMatIO", "zlib"});
+        annotation (LibraryDirectory="modelica://Modelica/Resources/Library", Include="#define TABLE_SHARE\n#include \"ModelicaTableAdditions.c\"\n#include \"ModelicaIOAdditions.c\"\n#undef TABLE_SHARE", Library={"ModelicaMatIO", "zlib"});
     end getTable1DValueNoDer;
 
     function getDerTable1DValue
@@ -1205,7 +1205,7 @@ MATLAB is a registered trademark of The MathWorks, Inc.
       input Real der_u;
       output Real der_y;
       external"C" der_y = ModelicaTableAdditions_CombiTable1D_getDerValue(tableID, icol, u, der_u)
-        annotation (LibraryDirectory="modelica://Modelica/Resources/Library", Include="#include \"ModelicaTableAdditions.c\"\n#include \"ModelicaIOAdditions.c\"", Library={"ModelicaMatIO", "zlib"});
+        annotation (LibraryDirectory="modelica://Modelica/Resources/Library", Include="#define TABLE_SHARE\n#include \"ModelicaTableAdditions.c\"\n#include \"ModelicaIOAdditions.c\"\n#undef TABLE_SHARE", Library={"ModelicaMatIO", "zlib"});
     end getDerTable1DValue;
 
     function getTable1DAbscissaUmin
@@ -1214,7 +1214,7 @@ MATLAB is a registered trademark of The MathWorks, Inc.
       input ModelicaTableAdditions.Blocks.Types.ExternalCombiTable1D tableID;
       output Real uMin "Minimum abscissa value in table";
       external"C" uMin = ModelicaTableAdditions_CombiTable1D_minimumAbscissa(tableID)
-        annotation (LibraryDirectory="modelica://Modelica/Resources/Library", Include="#include \"ModelicaTableAdditions.c\"\n#include \"ModelicaIOAdditions.c\"", Library={"ModelicaMatIO", "zlib"});
+        annotation (LibraryDirectory="modelica://Modelica/Resources/Library", Include="#define TABLE_SHARE\n#include \"ModelicaTableAdditions.c\"\n#include \"ModelicaIOAdditions.c\"\n#undef TABLE_SHARE", Library={"ModelicaMatIO", "zlib"});
     end getTable1DAbscissaUmin;
 
     function getTable1DAbscissaUmax
@@ -1223,7 +1223,7 @@ MATLAB is a registered trademark of The MathWorks, Inc.
       input ModelicaTableAdditions.Blocks.Types.ExternalCombiTable1D tableID;
       output Real uMax "Maximum abscissa value in table";
       external"C" uMax = ModelicaTableAdditions_CombiTable1D_maximumAbscissa(tableID)
-        annotation (LibraryDirectory="modelica://Modelica/Resources/Library", Include="#include \"ModelicaTableAdditions.c\"\n#include \"ModelicaIOAdditions.c\"", Library={"ModelicaMatIO", "zlib"});
+        annotation (LibraryDirectory="modelica://Modelica/Resources/Library", Include="#define TABLE_SHARE\n#include \"ModelicaTableAdditions.c\"\n#include \"ModelicaIOAdditions.c\"\n#undef TABLE_SHARE", Library={"ModelicaMatIO", "zlib"});
     end getTable1DAbscissaUmax;
 
     function readTable2DData "Read table data from text or MATLAB MAT-file"
@@ -1235,7 +1235,7 @@ MATLAB is a registered trademark of The MathWorks, Inc.
         "= true: Print info message; = false: No info message";
       output Real readSuccess "Table read success";
       external"C" readSuccess = ModelicaTableAdditions_CombiTable2D_read(tableID, forceRead, verboseRead)
-        annotation (LibraryDirectory="modelica://Modelica/Resources/Library", Include="#include \"ModelicaTableAdditions.c\"\n#include \"ModelicaIOAdditions.c\"", Library={"ModelicaMatIO", "zlib"});
+        annotation (LibraryDirectory="modelica://Modelica/Resources/Library", Include="#define TABLE_SHARE\n#include \"ModelicaTableAdditions.c\"\n#include \"ModelicaIOAdditions.c\"\n#undef TABLE_SHARE", Library={"ModelicaMatIO", "zlib"});
       annotation(__ModelicaAssociation_Impure=true);
     end readTable2DData;
 
@@ -1246,7 +1246,7 @@ MATLAB is a registered trademark of The MathWorks, Inc.
       input Real u2;
       output Real y;
       external"C" y = ModelicaTableAdditions_CombiTable2D_getValue(tableID, u1, u2)
-        annotation (LibraryDirectory="modelica://Modelica/Resources/Library", Include="#include \"ModelicaTableAdditions.c\"\n#include \"ModelicaIOAdditions.c\"", Library={"ModelicaMatIO", "zlib"});
+        annotation (LibraryDirectory="modelica://Modelica/Resources/Library", Include="#define TABLE_SHARE\n#include \"ModelicaTableAdditions.c\"\n#include \"ModelicaIOAdditions.c\"\n#undef TABLE_SHARE", Library={"ModelicaMatIO", "zlib"});
       annotation (derivative = getDerTable2DValue);
     end getTable2DValue;
 
@@ -1258,7 +1258,7 @@ MATLAB is a registered trademark of The MathWorks, Inc.
       input Real u2;
       output Real y;
       external"C" y = ModelicaTableAdditions_CombiTable2D_getValue(tableID, u1, u2)
-        annotation (LibraryDirectory="modelica://Modelica/Resources/Library", Include="#include \"ModelicaTableAdditions.c\"\n#include \"ModelicaIOAdditions.c\"", Library={"ModelicaMatIO", "zlib"});
+        annotation (LibraryDirectory="modelica://Modelica/Resources/Library", Include="#define TABLE_SHARE\n#include \"ModelicaTableAdditions.c\"\n#include \"ModelicaIOAdditions.c\"\n#undef TABLE_SHARE", Library={"ModelicaMatIO", "zlib"});
     end getTable2DValueNoDer;
 
     function getDerTable2DValue
@@ -1271,7 +1271,7 @@ MATLAB is a registered trademark of The MathWorks, Inc.
       input Real der_u2;
       output Real der_y;
       external"C" der_y = ModelicaTableAdditions_CombiTable2D_getDerValue(tableID, u1, u2, der_u1, der_u2)
-        annotation (LibraryDirectory="modelica://Modelica/Resources/Library", Include="#include \"ModelicaTableAdditions.c\"\n#include \"ModelicaIOAdditions.c\"", Library={"ModelicaMatIO", "zlib"});
+        annotation (LibraryDirectory="modelica://Modelica/Resources/Library", Include="#define TABLE_SHARE\n#include \"ModelicaTableAdditions.c\"\n#include \"ModelicaIOAdditions.c\"\n#undef TABLE_SHARE", Library={"ModelicaMatIO", "zlib"});
     end getDerTable2DValue;
 
     function getTable2DAbscissaUmin
@@ -1280,7 +1280,7 @@ MATLAB is a registered trademark of The MathWorks, Inc.
       input ModelicaTableAdditions.Blocks.Types.ExternalCombiTable2D tableID;
       output Real uMin[2] "Minimum abscissa value in table";
       external"C" ModelicaTableAdditions_CombiTable2D_minimumAbscissa(tableID, uMin)
-        annotation (LibraryDirectory="modelica://Modelica/Resources/Library", Include="#include \"ModelicaTableAdditions.c\"\n#include \"ModelicaIOAdditions.c\"", Library={"ModelicaMatIO", "zlib"});
+        annotation (LibraryDirectory="modelica://Modelica/Resources/Library", Include="#define TABLE_SHARE\n#include \"ModelicaTableAdditions.c\"\n#include \"ModelicaIOAdditions.c\"\n#undef TABLE_SHARE", Library={"ModelicaMatIO", "zlib"});
     end getTable2DAbscissaUmin;
 
     function getTable2DAbscissaUmax
@@ -1289,7 +1289,7 @@ MATLAB is a registered trademark of The MathWorks, Inc.
       input ModelicaTableAdditions.Blocks.Types.ExternalCombiTable2D tableID;
       output Real uMax[2] "Maximum abscissa value in table";
       external"C" ModelicaTableAdditions_CombiTable2D_maximumAbscissa(tableID, uMax)
-        annotation (LibraryDirectory="modelica://Modelica/Resources/Library", Include="#include \"ModelicaTableAdditions.c\"\n#include \"ModelicaIOAdditions.c\"", Library={"ModelicaMatIO", "zlib"});
+        annotation (LibraryDirectory="modelica://Modelica/Resources/Library", Include="#define TABLE_SHARE\n#include \"ModelicaTableAdditions.c\"\n#include \"ModelicaIOAdditions.c\"\n#undef TABLE_SHARE", Library={"ModelicaMatIO", "zlib"});
     end getTable2DAbscissaUmax;
   end Internal;
   annotation (Documentation(info="<html>

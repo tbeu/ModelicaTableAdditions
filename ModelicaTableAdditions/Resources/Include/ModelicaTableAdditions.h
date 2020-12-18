@@ -150,6 +150,23 @@ MODELICA_EXPORT void* ModelicaTableAdditions_CombiTimeTable_init2(_In_z_ const c
                                                   double shiftTime,
                                                   int timeEvents,
                                                   int verbose) MODELICA_NONNULLATTR;
+  /* Same as ModelicaTableAdditions_CombiTimeTable_init3, but without delimiter and nHeaderLines
+     arguments
+  */
+
+MODELICA_EXPORT void* ModelicaTableAdditions_CombiTimeTable_init3(_In_z_ const char* fileName,
+                                                  _In_z_ const char* tableName,
+                                                  _In_ double* table, size_t nRow,
+                                                  size_t nColumn,
+                                                  double startTime,
+                                                  _In_ int* columns,
+                                                  size_t nCols, int smoothness,
+                                                  int extrapolation,
+                                                  double shiftTime,
+                                                  int timeEvents,
+                                                  int verbose,
+                                                  _In_z_ const char* delimiter,
+                                                  int nHeaderLines) MODELICA_NONNULLATTR;
   /* Initialize 1-dim. table where first column is time
 
      -> fileName: Name of file
@@ -182,6 +199,8 @@ MODELICA_EXPORT void* ModelicaTableAdditions_CombiTimeTable_init2(_In_z_ const c
                     = 2: at discontinuities
                     = 3: no
      -> verbose: Print message that file is loading
+     -> delimiter: Column delimiter character (CSV file only)
+     -> nHeaderLines: Number of header lines to ignore (CSV file only)
      <- RETURN: Pointer to internal memory of table structure
   */
 

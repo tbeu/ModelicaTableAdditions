@@ -132,7 +132,8 @@ MODELICA_EXPORT int ModelicaIOAdditions_writeRealMatrix(_In_z_ const char* fileN
 MODELICA_EXPORT double* ModelicaIOAdditions_readRealTable(_In_z_ const char* fileName,
                                  _In_z_ const char* tableName,
                                  _Out_ size_t* m, _Out_ size_t* n,
-                                 int verbose) MODELICA_NONNULLATTR;
+                                 int verbose, _In_z_ const char* delimiter,
+                                 int nHeaderLines) MODELICA_NONNULLATTR;
   /* Read matrix and its dimensions from file
      Note: Only called from ModelicaStandardTables, but impossible to be called
      from a Modelica environment
@@ -142,6 +143,8 @@ MODELICA_EXPORT double* ModelicaIOAdditions_readRealTable(_In_z_ const char* fil
      -> m: Number of rows
      -> n: Number of columns
      -> verbose: Print message that file is loading
+     -> delimiter: Column delimiter character (CSV file only)
+     -> nHeaderLines: Number of header lines to ignore (CSV file only)
      <- RETURN: Array of dimensions m by n
   */
 
