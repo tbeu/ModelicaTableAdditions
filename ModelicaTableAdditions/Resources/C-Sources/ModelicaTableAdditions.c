@@ -161,8 +161,6 @@
                      Implemented a first version
 */
 
-#pragma once
-
 #include "ModelicaTableAdditions.h"
 #include "ModelicaIOAdditions.h"
 #include "ModelicaUtilities.h"
@@ -457,7 +455,7 @@ static void ModelicaTableAdditions_deleteCS(void) {
 
 /* ----- Function declarations ----- */
 
-extern int usertab(char* tableName, int nipo, int dim[], int* colWise,
+extern int usertabadditions(char* tableName, int nipo, int dim[], int* colWise,
             double** table);
   /* Define tables by statically storing them in function usertab.
      This function can be adapted by the user to his/her needs.
@@ -735,7 +733,7 @@ void* ModelicaTableAdditions_CombiTimeTable_init3(_In_z_ const char* fileName,
         case TABLESOURCE_FUNCTION: {
             int colWise;
             int dim[MAX_TABLE_DIMENSIONS];
-            if (usertab((char*)tableName, 0 /* Time-interpolation */, dim,
+            if (usertabadditions((char*)tableName, 0 /* Time-interpolation */, dim,
                 &colWise, &tableID->table) == 0) {
                 if (0 == colWise) {
                     tableID->nRow = (size_t)dim[0];
@@ -2173,7 +2171,7 @@ void* ModelicaTableAdditions_CombiTable1D_init2(_In_z_ const char* fileName,
         case TABLESOURCE_FUNCTION: {
             int colWise;
             int dim[MAX_TABLE_DIMENSIONS];
-            if (usertab((char*)tableName, 1 /* 1D-interpolation */, dim,
+            if (usertabadditions((char*)tableName, 1 /* 1D-interpolation */, dim,
                 &colWise, &tableID->table) == 0) {
                 if (0 == colWise) {
                     tableID->nRow = (size_t)dim[0];
@@ -2964,7 +2962,7 @@ void* ModelicaTableAdditions_CombiTable2D_init2(_In_z_ const char* fileName,
         case TABLESOURCE_FUNCTION: {
             int colWise;
             int dim[MAX_TABLE_DIMENSIONS];
-            if (usertab((char*)tableName, 2 /* 2D-interpolation */, dim,
+            if (usertabadditions((char*)tableName, 2 /* 2D-interpolation */, dim,
                 &colWise, &tableID->table) == 0) {
                 if (0 == colWise) {
                     tableID->nRow = (size_t)dim[0];

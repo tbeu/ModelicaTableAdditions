@@ -79,8 +79,6 @@
                      Implemented a first version (ticket #1856)
 */
 
-#pragma once
-
 #if defined(__gnu_linux__) && !defined(NO_FILE_SYSTEM)
 #define _GNU_SOURCE 1
 #endif
@@ -189,7 +187,7 @@ static int readLine(_In_ char** buf, _In_ int* bufLen, _In_ FILE* fp) MODELICA_N
 static int IsNumber(char* token);
   /*  Check, whether a token represents a floating-point number */
 
-// static void transpose(_Inout_ double* table, size_t nRow, size_t nCol) MODELICA_NONNULLATTR;
+static void transpose(_Inout_ double* table, size_t nRow, size_t nCol) MODELICA_NONNULLATTR;
   /* Cycle-based in-place array transposition */
 
 #if defined(__clang__)
@@ -1285,40 +1283,40 @@ static int readLine(_In_ char** buf, _In_ int* bufLen, _In_ FILE* fp) {
     return 0;
 }
 
-// static void transpose(_Inout_ double* table, size_t nRow, size_t nCol) {
-//   /* Reference:
-//
-//      Cycle-based in-place array transposition
-//      (http://en.wikipedia.org/wiki/In-place_matrix_transposition#Non-square_matrices:_Following_the_cycles)
-//   */
-//
-//     size_t i;
-//     for (i = 1; i < nRow*nCol - 1; i++) {
-//         size_t x = nRow*(i % nCol) + i/nCol; /* predecessor of i in the cycle */
-//         /* Continue if cycle is of length one or predecessor already was visited */
-//         if (x <= i) {
-//             continue;
-//         }
-//         /* Continue if cycle already was visited */
-//         while (x > i) {
-//             x = nRow*(x % nCol) + x/nCol;
-//         }
-//         if (x < i) {
-//             continue;
-//         }
-//         {
-//             double tmp = table[i];
-//             size_t s = i; /* start index in the cycle */
-//             x = nRow*(i % nCol) + i/nCol; /* predecessor of i in the cycle */
-//             while (x != i) {
-//                 table[s] = table[x];
-//                 s = x;
-//                 x = nRow*(x % nCol) + x/nCol;
-//             }
-//             table[s] = tmp;
-//         }
-//     }
-// }
+static void transpose(_Inout_ double* table, size_t nRow, size_t nCol) {
+  /* Reference:
+
+     Cycle-based in-place array transposition
+     (http://en.wikipedia.org/wiki/In-place_matrix_transposition#Non-square_matrices:_Following_the_cycles)
+  */
+
+    size_t i;
+    for (i = 1; i < nRow*nCol - 1; i++) {
+        size_t x = nRow*(i % nCol) + i/nCol; /* predecessor of i in the cycle */
+        /* Continue if cycle is of length one or predecessor already was visited */
+        if (x <= i) {
+            continue;
+        }
+        /* Continue if cycle already was visited */
+        while (x > i) {
+            x = nRow*(x % nCol) + x/nCol;
+        }
+        if (x < i) {
+            continue;
+        }
+        {
+            double tmp = table[i];
+            size_t s = i; /* start index in the cycle */
+            x = nRow*(i % nCol) + i/nCol; /* predecessor of i in the cycle */
+            while (x != i) {
+                table[s] = table[x];
+                s = x;
+                x = nRow*(x % nCol) + x/nCol;
+            }
+            table[s] = tmp;
+        }
+    }
+}
 
 #if defined(__clang__)
 #pragma clang diagnostic pop
