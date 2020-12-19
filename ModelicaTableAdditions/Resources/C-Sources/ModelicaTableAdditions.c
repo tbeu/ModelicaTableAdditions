@@ -2075,6 +2075,21 @@ void* ModelicaTableAdditions_CombiTable1D_init2(_In_z_ const char* fileName,
                                                 size_t nCols, int smoothness,
                                                 int extrapolation,
                                                 int verbose) {
+    return ModelicaTableAdditions_CombiTable1D_init3(fileName, tableName,
+        table, nRow, nColumn, columns, nCols, smoothness, LAST_TWO_POINTS,
+        1 /* verbose */, ",", 0);
+}
+
+void* ModelicaTableAdditions_CombiTable1D_init3(_In_z_ const char* fileName,
+                                                _In_z_ const char* tableName,
+                                                _In_ double* table, size_t nRow,
+                                                size_t nColumn,
+                                                _In_ int* columns,
+                                                size_t nCols, int smoothness,
+                                                int extrapolation,
+                                                int verbose,
+                                                _In_z_ const char* delimiter,
+                                                int nHeaderLines) {
     CombiTable1D* tableID;
 #if defined(TABLE_SHARE) && !defined(NO_FILE_SYSTEM)
     TableShare* file = NULL;
@@ -2088,7 +2103,7 @@ void* ModelicaTableAdditions_CombiTable1D_init2(_In_z_ const char* fileName,
     /* Read table from file before any other heap allocation */
     if (TABLESOURCE_FILE == source) {
 #if defined(TABLE_SHARE) && !defined(NO_FILE_SYSTEM)
-        file = readTable(fileName, tableName, &nRowFile, &nColFile, verbose, 0, ",", 0);
+        file = readTable(fileName, tableName, &nRowFile, &nColFile, verbose, 0, delimiter, nHeaderLines);
         if (NULL != file) {
             keyFile = file->key;
             tableFile = file->table;
@@ -2097,7 +2112,7 @@ void* ModelicaTableAdditions_CombiTable1D_init2(_In_z_ const char* fileName,
             return NULL;
         }
 #else
-        tableFile = readTable(fileName, tableName, &nRowFile, &nColFile, verbose, 0, ",", 0);
+        tableFile = readTable(fileName, tableName, &nRowFile, &nColFile, verbose, 0, delimiter, nHeaderLines);
         if (NULL == tableFile) {
             return NULL;
         }
@@ -2867,6 +2882,18 @@ void* ModelicaTableAdditions_CombiTable2D_init2(_In_z_ const char* fileName,
                                                 size_t nColumn, int smoothness,
                                                 int extrapolation,
                                                 int verbose) {
+    return ModelicaTableAdditions_CombiTable2D_init3(fileName, tableName,
+        table, nRow, nColumn, smoothness, LAST_TWO_POINTS, 1 /* verbose */, ",", 0);
+}
+
+void* ModelicaTableAdditions_CombiTable2D_init3(_In_z_ const char* fileName,
+                                                _In_z_ const char* tableName,
+                                                _In_ double* table, size_t nRow,
+                                                size_t nColumn, int smoothness,
+                                                int extrapolation,
+                                                int verbose,
+                                                _In_z_ const char* delimiter,
+                                                int nHeaderLines) {
     CombiTable2D* tableID;
 #if defined(TABLE_SHARE) && !defined(NO_FILE_SYSTEM)
     TableShare* file = NULL;
@@ -2880,7 +2907,7 @@ void* ModelicaTableAdditions_CombiTable2D_init2(_In_z_ const char* fileName,
     /* Read table from file before any other heap allocation */
     if (TABLESOURCE_FILE == source) {
 #if defined(TABLE_SHARE) && !defined(NO_FILE_SYSTEM)
-        file = readTable(fileName, tableName, &nRowFile, &nColFile, verbose, 0, ",", 0);
+        file = readTable(fileName, tableName, &nRowFile, &nColFile, verbose, 0, delimiter, nHeaderLines);
         if (NULL != file) {
             keyFile = file->key;
             tableFile = file->table;
@@ -2889,7 +2916,7 @@ void* ModelicaTableAdditions_CombiTable2D_init2(_In_z_ const char* fileName,
             return NULL;
         }
 #else
-        tableFile = readTable(fileName, tableName, &nRowFile, &nColFile, verbose, 0, ",", 0);
+        tableFile = readTable(fileName, tableName, &nRowFile, &nColFile, verbose, 0, delimiter, nHeaderLines);
         if (NULL == tableFile) {
             return NULL;
         }

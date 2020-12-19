@@ -18,8 +18,15 @@ package Tables
       annotation (Dialog(
         group="Table data definition",
         enable=tableOnFile,
-        loadSelector(filter="Text files (*.txt);;MATLAB MAT-files (*.mat)",
+        loadSelector(filter="Text files (*.txt);;MATLAB MAT-files (*.mat);;Comma-separated values files (*.csv)",
             caption="Open file in which table is present")));
+    parameter String delimiter="," "Column delimiter character for CSV file"
+      annotation (Dialog(
+        group="Table data definition",
+        enable=tableOnFile),
+        choices(choice=" " "Blank", choice="," "Comma", choice="\t" "Horizontal tabulator", choice=";" "Semicolon"));
+    parameter Integer nHeaderLines=0 "Number of header lines to ignore for CSV file"
+      annotation (Dialog(group="Table data definition",enable=tableOnFile));
     parameter Boolean verboseRead=true
       "= true, if info message that file is loading is to be printed"
       annotation (Dialog(group="Table data definition",enable=tableOnFile));
@@ -42,16 +49,19 @@ package Tables
   protected
     parameter ModelicaTableAdditions.Blocks.Types.ExternalCombiTable1D tableID=
         ModelicaTableAdditions.Blocks.Types.ExternalCombiTable1D(
-          if tableOnFile then tableName else "NoName",
+          if tableOnFile then if isCsvExt then "Values" else tableName else "NoName",
           if tableOnFile and fileName <> "NoName" and not Modelica.Utilities.Strings.isEmpty(fileName) then fileName else "NoName",
           table,
           columns,
           smoothness,
           extrapolation,
-          if tableOnFile then verboseRead else false) "External table object";
+          if tableOnFile then verboseRead else false,
+          delimiter,
+          nHeaderLines) "External table object";
+    final parameter Boolean isCsvExt = if tableOnFile then Modelica.Utilities.Strings.findLast(fileName, ".csv", caseSensitive=false) + 3 == Modelica.Utilities.Strings.length(fileName) else false;
   equation
     if tableOnFile then
-      assert(tableName <> "NoName",
+      assert(tableName <> "NoName" or isCsvExt,
         "tableOnFile = true and no table name given");
     else
       assert(size(table, 1) > 0 and size(table, 2) > 0,
@@ -153,7 +163,7 @@ The table matrix can be defined in the following ways:
    fileName  is \"NoName\" or has only blanks.
 </pre></li>
 <li><strong>Read</strong> from a <strong>file</strong> \"fileName\" where the matrix is stored as
-    \"tableName\". Both text and MATLAB MAT-file format is possible.
+    \"tableName\". CSV, text and MATLAB MAT-file format is possible.
     (The text format is described below).
     The MAT-file format comes in four different versions: v4, v6, v7 and v7.3.
     The library supports at least v4, v6 and v7 whereas v7.3 is optional.
@@ -238,7 +248,8 @@ MATLAB is a registered trademark of The MathWorks, Inc.
         extent={{-60.0,-20.0},{-30.0,0.0}}),
       Rectangle(fillColor={255,215,136},
         fillPattern=FillPattern.Solid,
-        extent={{-60.0,-40.0},{-30.0,-20.0}})}),
+        extent={{-60.0,-40.0},{-30.0,-20.0}}),
+      Text(lineColor={0,0,255},extent={{-85,110},{85,65}},textString=DynamicSelect("csv", if isCsvExt then if delimiter == " " then "c s v" elseif delimiter == "," then "c,s,v" elseif delimiter == "\t" then "c\\ts\\tv" elseif delimiter == ";" then "c;s;v" else "csv" else ""))}),
       Diagram(coordinateSystem(preserveAspectRatio=true, extent={{-100,-100},{
               100,100}}), graphics={
           Rectangle(
@@ -307,8 +318,15 @@ MATLAB is a registered trademark of The MathWorks, Inc.
       annotation (Dialog(
         group="Table data definition",
         enable=tableOnFile,
-        loadSelector(filter="Text files (*.txt);;MATLAB MAT-files (*.mat)",
+        loadSelector(filter="Text files (*.txt);;MATLAB MAT-files (*.mat);;Comma-separated values files (*.csv)",
             caption="Open file in which table is present")));
+    parameter String delimiter="," "Column delimiter character for CSV file"
+      annotation (Dialog(
+        group="Table data definition",
+        enable=tableOnFile),
+        choices(choice=" " "Blank", choice="," "Comma", choice="\t" "Horizontal tabulator", choice=";" "Semicolon"));
+    parameter Integer nHeaderLines=0 "Number of header lines to ignore for CSV file"
+      annotation (Dialog(group="Table data definition",enable=tableOnFile));
     parameter Boolean verboseRead=true
       "= true, if info message that file is loading is to be printed"
       annotation (Dialog(group="Table data definition",enable=tableOnFile));
@@ -331,16 +349,19 @@ MATLAB is a registered trademark of The MathWorks, Inc.
   protected
     parameter ModelicaTableAdditions.Blocks.Types.ExternalCombiTable1D tableID=
         ModelicaTableAdditions.Blocks.Types.ExternalCombiTable1D(
-          if tableOnFile then tableName else "NoName",
+          if tableOnFile then if isCsvExt then "Values" else tableName else "NoName",
           if tableOnFile and fileName <> "NoName" and not Modelica.Utilities.Strings.isEmpty(fileName) then fileName else "NoName",
           table,
           columns,
           smoothness,
           extrapolation,
-          if tableOnFile then verboseRead else false) "External table object";
+          if tableOnFile then verboseRead else false,
+          delimiter,
+          nHeaderLines) "External table object";
+    final parameter Boolean isCsvExt = if tableOnFile then Modelica.Utilities.Strings.findLast(fileName, ".csv", caseSensitive=false) + 3 == Modelica.Utilities.Strings.length(fileName) else false;
   equation
     if tableOnFile then
-      assert(tableName <> "NoName",
+      assert(tableName <> "NoName" or isCsvExt,
         "tableOnFile = true and no table name given");
     else
       assert(size(table, 1) > 0 and size(table, 2) > 0,
@@ -440,7 +461,7 @@ The table matrix can be defined in the following ways:
    fileName  is \"NoName\" or has only blanks.
 </pre></li>
 <li><strong>Read</strong> from a <strong>file</strong> \"fileName\" where the matrix is stored as
-    \"tableName\". Both text and MATLAB MAT-file format is possible.
+    \"tableName\". CSV, text and MATLAB MAT-file format is possible.
     (The text format is described below).
     The MAT-file format comes in four different versions: v4, v6, v7 and v7.3.
     The library supports at least v4, v6 and v7 whereas v7.3 is optional.
@@ -525,7 +546,8 @@ MATLAB is a registered trademark of The MathWorks, Inc.
         extent={{-60.0,-20.0},{-30.0,0.0}}),
       Rectangle(fillColor={255,215,136},
         fillPattern=FillPattern.Solid,
-        extent={{-60.0,-40.0},{-30.0,-20.0}})}),
+        extent={{-60.0,-40.0},{-30.0,-20.0}}),
+      Text(lineColor={0,0,255},extent={{-85,110},{85,65}},textString=DynamicSelect("csv", if isCsvExt then if delimiter == " " then "c s v" elseif delimiter == "," then "c,s,v" elseif delimiter == "\t" then "c\\ts\\tv" elseif delimiter == ";" then "c;s;v" else "csv" else ""))}),
       Diagram(coordinateSystem(preserveAspectRatio=true, extent={{-100,-100},{
               100,100}}), graphics={
           Rectangle(
@@ -684,7 +706,7 @@ The table matrix can be defined in the following ways:
    fileName  is \"NoName\" or has only blanks.
 </pre></li>
 <li><strong>Read</strong> from a <strong>file</strong> \"fileName\" where the matrix is stored as
-    \"tableName\". Both text and MATLAB MAT-file format is possible.
+    \"tableName\". CSV, text and MATLAB MAT-file format is possible.
     (The text format is described below).
     The MAT-file format comes in four different versions: v4, v6, v7 and v7.3.
     The library supports at least v4, v6 and v7 whereas v7.3 is optional.
@@ -867,7 +889,7 @@ The table matrix can be defined in the following ways:
    fileName  is \"NoName\" or has only blanks.
 </pre></li>
 <li><strong>Read</strong> from a <strong>file</strong> \"fileName\" where the matrix is stored as
-    \"tableName\". Both text and MATLAB MAT-file format is possible.
+    \"tableName\". CSV, text and MATLAB MAT-file format is possible.
     (The text format is described below).
     The MAT-file format comes in four different versions: v4, v6, v7 and v7.3.
     The library supports at least v4, v6 and v7 whereas v7.3 is optional.
@@ -955,8 +977,15 @@ MATLAB is a registered trademark of The MathWorks, Inc.
         annotation (Dialog(
           group="Table data definition",
           enable=tableOnFile,
-          loadSelector(filter="Text files (*.txt);;MATLAB MAT-files (*.mat)",
+          loadSelector(filter="Text files (*.txt);;MATLAB MAT-files (*.mat);;Comma-separated values files (*.csv)",
               caption="Open file in which table is present")));
+      parameter String delimiter="," "Column delimiter character for CSV file"
+        annotation (Dialog(
+          group="Table data definition",
+          enable=tableOnFile),
+          choices(choice=" " "Blank", choice="," "Comma", choice="\t" "Horizontal tabulator", choice=";" "Semicolon"));
+      parameter Integer nHeaderLines=0 "Number of header lines to ignore for CSV file"
+        annotation (Dialog(group="Table data definition",enable=tableOnFile));
       parameter Boolean verboseRead=true
         "= true, if info message that file is loading is to be printed"
         annotation (Dialog(group="Table data definition",enable=tableOnFile));
@@ -976,15 +1005,18 @@ MATLAB is a registered trademark of The MathWorks, Inc.
     protected
         parameter ModelicaTableAdditions.Blocks.Types.ExternalCombiTable2D tableID=
           ModelicaTableAdditions.Blocks.Types.ExternalCombiTable2D(
-            if tableOnFile then tableName else "NoName",
+            if tableOnFile then if isCsvExt then "Values" else tableName else "NoName",
             if tableOnFile and fileName <> "NoName" and not Modelica.Utilities.Strings.isEmpty(fileName) then fileName else "NoName",
             table,
             smoothness,
             extrapolation,
-            if tableOnFile then verboseRead else false) "External table object";
+            if tableOnFile then verboseRead else false,
+            delimiter,
+            nHeaderLines) "External table object";
+      final parameter Boolean isCsvExt = if tableOnFile then Modelica.Utilities.Strings.findLast(fileName, ".csv", caseSensitive=false) + 3 == Modelica.Utilities.Strings.length(fileName) else false;
     equation
         if tableOnFile then
-          assert(tableName <> "NoName",
+          assert(tableName <> "NoName" or isCsvExt,
             "tableOnFile = true and no table name given");
         else
           assert(size(table, 1) > 0 and size(table, 2) > 0,
@@ -1019,7 +1051,8 @@ MATLAB is a registered trademark of The MathWorks, Inc.
       Rectangle(origin={-2.3077,-0.0},
         fillColor={255,215,136},
         fillPattern=FillPattern.Solid,
-        extent={{32.3077,20.0},{62.3077,40.0}})}),
+        extent={{32.3077,20.0},{62.3077,40.0}}),
+      Text(lineColor={0,0,255},extent={{-85,110},{85,65}},textString=DynamicSelect("csv", if isCsvExt then if delimiter == " " then "c s v" elseif delimiter == "," then "c,s,v" elseif delimiter == "\t" then "c\\ts\\tv" elseif delimiter == ";" then "c;s;v" else "csv" else ""))}),
       Diagram(coordinateSystem(preserveAspectRatio=true, extent={{-100,-100},{
               100,100}}), graphics={
           Rectangle(

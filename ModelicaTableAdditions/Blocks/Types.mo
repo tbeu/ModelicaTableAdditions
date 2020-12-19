@@ -62,8 +62,10 @@ package Types
       input Modelica.Blocks.Types.Smoothness smoothness;
       input Modelica.Blocks.Types.Extrapolation extrapolation=Modelica.Blocks.Types.Extrapolation.LastTwoPoints;
       input Boolean verboseRead=true "= true: Print info message; = false: No info message";
+      input String delimiter="," "Column delimiter character for CSV file";
+      input Integer nHeaderLines=0 "Number of header lines to ignore for CSV file";
       output ExternalCombiTable1D externalCombiTable1D;
-    external"C" externalCombiTable1D = ModelicaTableAdditions_CombiTable1D_init2(
+    external"C" externalCombiTable1D = ModelicaTableAdditions_CombiTable1D_init3(
             fileName,
             tableName,
             table,
@@ -73,7 +75,9 @@ package Types
             size(columns, 1),
             smoothness,
             extrapolation,
-            verboseRead) annotation (LibraryDirectory="modelica://ModelicaTableAdditions/Resources/Library", Library={"ModelicaTableAdditions", "ModelicaIOAdditions", "ModelicaMatIO", "zlib"});
+            verboseRead,
+            delimiter,
+            nHeaderLines) annotation (LibraryDirectory="modelica://ModelicaTableAdditions/Resources/Library", Library={"ModelicaTableAdditions", "ModelicaIOAdditions", "ModelicaMatIO", "zlib"});
     end constructor;
 
     function destructor "Terminate 1-dim. table defined by matrix"
@@ -97,8 +101,10 @@ package Types
       input Modelica.Blocks.Types.Smoothness smoothness;
       input Modelica.Blocks.Types.Extrapolation extrapolation=Modelica.Blocks.Types.Extrapolation.LastTwoPoints;
       input Boolean verboseRead=true "= true: Print info message; = false: No info message";
+      input String delimiter="," "Column delimiter character for CSV file";
+      input Integer nHeaderLines=0 "Number of header lines to ignore for CSV file";
       output ExternalCombiTable2D externalCombiTable2D;
-    external"C" externalCombiTable2D = ModelicaTableAdditions_CombiTable2D_init2(
+    external"C" externalCombiTable2D = ModelicaTableAdditions_CombiTable2D_init3(
             fileName,
             tableName,
             table,
@@ -106,7 +112,9 @@ package Types
             size(table, 2),
             smoothness,
             extrapolation,
-            verboseRead) annotation (LibraryDirectory="modelica://ModelicaTableAdditions/Resources/Library", Library={"ModelicaTableAdditions", "ModelicaIOAdditions", "ModelicaMatIO", "zlib"});
+            verboseRead,
+            delimiter,
+            nHeaderLines) annotation (LibraryDirectory="modelica://ModelicaTableAdditions/Resources/Library", Library={"ModelicaTableAdditions", "ModelicaIOAdditions", "ModelicaMatIO", "zlib"});
     end constructor;
 
     function destructor "Terminate 2-dim. table defined by matrix"
