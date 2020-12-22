@@ -91,7 +91,7 @@ package Sources
     discrete Real nextTimeEventScaled(start=0, fixed=true)
       "Next scaled time event instant";
     Real timeScaled "Scaled time";
-    final parameter Boolean isCsvExt = if tableOnFile then Modelica.Utilities.Strings.findLast(fileName, ".csv", caseSensitive=false) + 3 == Modelica.Utilities.Strings.length(fileName) else false;
+    final parameter Boolean isCsvExt = if tableOnFile then Modelica.Utilities.Strings.findLast(fileName, ".csv", 0, false) + 3 == Modelica.Utilities.Strings.length(fileName) else false;
   equation
     if tableOnFile then
       assert(tableName <> "NoName" or isCsvExt,

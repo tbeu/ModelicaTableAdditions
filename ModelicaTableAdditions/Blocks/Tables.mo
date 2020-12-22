@@ -58,7 +58,7 @@ package Tables
           if tableOnFile then verboseRead else false,
           delimiter,
           nHeaderLines) "External table object";
-    final parameter Boolean isCsvExt = if tableOnFile then Modelica.Utilities.Strings.findLast(fileName, ".csv", caseSensitive=false) + 3 == Modelica.Utilities.Strings.length(fileName) else false;
+    final parameter Boolean isCsvExt = if tableOnFile then Modelica.Utilities.Strings.findLast(fileName, ".csv", 0, false) + 3 == Modelica.Utilities.Strings.length(fileName) else false;
   equation
     if tableOnFile then
       assert(tableName <> "NoName" or isCsvExt,
@@ -320,7 +320,7 @@ MATLAB is a registered trademark of The MathWorks, Inc.
           if tableOnFile then verboseRead else false,
           delimiter,
           nHeaderLines) "External table object";
-    final parameter Boolean isCsvExt = if tableOnFile then Modelica.Utilities.Strings.findLast(fileName, ".csv", caseSensitive=false) + 3 == Modelica.Utilities.Strings.length(fileName) else false;
+    final parameter Boolean isCsvExt = if tableOnFile then Modelica.Utilities.Strings.findLast(fileName, ".csv", 0, false) + 3 == Modelica.Utilities.Strings.length(fileName) else false;
   equation
     if tableOnFile then
       assert(tableName <> "NoName" or isCsvExt,
@@ -955,7 +955,7 @@ MATLAB is a registered trademark of The MathWorks, Inc.
             if tableOnFile then verboseRead else false,
             delimiter,
             nHeaderLines) "External table object";
-      final parameter Boolean isCsvExt = if tableOnFile then Modelica.Utilities.Strings.findLast(fileName, ".csv", caseSensitive=false) + 3 == Modelica.Utilities.Strings.length(fileName) else false;
+      final parameter Boolean isCsvExt = if tableOnFile then Modelica.Utilities.Strings.findLast(fileName, ".csv", 0, false) + 3 == Modelica.Utilities.Strings.length(fileName) else false;
     equation
         if tableOnFile then
           assert(tableName <> "NoName" or isCsvExt,
