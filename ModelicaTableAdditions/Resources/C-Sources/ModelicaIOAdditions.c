@@ -700,6 +700,10 @@ static double* readCsvTable(_In_z_ const char* fileName, _In_z_ const char* tabl
 #else
     char* dec;
 #endif
+    char delimTable[5] = " \t\r";
+    if (delimiter[0] != ' ' && delimiter[0] != '\t' && delimiter[0] != '\r') {
+        strncat(delimTable, delimiter, 1);
+    }
 
     fp = fopen(fileName, "r");
     if (NULL == fp) {
@@ -746,9 +750,9 @@ static double* readCsvTable(_In_z_ const char* fileName, _In_z_ const char* tabl
 #if defined(_POSIX_) || (defined(_MSC_VER) && _MSC_VER >= 1400)
             char* nextToken = NULL;
 #endif
-            char* token = strtok_r(buf, delimiter, &nextToken);
+            char* token = strtok_r(buf, delimTable, &nextToken);
             while (NULL != token) {
-                token = strtok_r(NULL, delimiter, &nextToken);
+                token = strtok_r(NULL, delimTable, &nextToken);
                 nCol++;
             }
         }
@@ -801,7 +805,7 @@ static double* readCsvTable(_In_z_ const char* fileName, _In_z_ const char* tabl
 #if defined(_POSIX_) || (defined(_MSC_VER) && _MSC_VER >= 1400)
             nextToken = NULL;
 #endif
-            token = strtok_r(buf, delimiter, &nextToken);
+            token = strtok_r(buf, delimTable, &nextToken);
             for (j = 0; j < nCol; j++) {
                 if (token == NULL) {
                     readError = 1;
@@ -850,7 +854,7 @@ static double* readCsvTable(_In_z_ const char* fileName, _In_z_ const char* tabl
                 }
 #endif
                 if (readError == 0) {
-                    token = strtok_r(NULL, delimiter, &nextToken);
+                    token = strtok_r(NULL, delimTable, &nextToken);
                 }
                 else {
                     break;
