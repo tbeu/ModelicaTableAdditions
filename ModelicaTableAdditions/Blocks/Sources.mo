@@ -6,7 +6,7 @@ package Sources
   extends Modelica.Icons.SourcesPackage;
 
   block CombiTimeTable
-    "Table look-up with respect to time and linear/periodic extrapolation methods (data from matrix/file)"
+    "Table look-up with respect to time and various interpolation and extrapolation methods (data from matrix/file)"
     import ModelicaTableAdditions.Blocks.Tables.Internal;
     extends Modelica.Blocks.Interfaces.MO(final nout=max([size(columns, 1); size(offset, 1)]));
     parameter Boolean tableOnFile=false
@@ -123,6 +123,10 @@ than the maximum abscissa value t_max (=" + String(t_max) + ") defined in the ta
       for i in 1:nout loop
         y[i] = p_offset[i] + Internal.getTimeTableValueNoDer(tableID, i, timeScaled, nextTimeEventScaled, pre(nextTimeEventScaled));
       end for;
+    elseif smoothness == Modelica.Blocks.Types.Smoothness.LinearSegments then
+      for i in 1:nout loop
+        y[i] = p_offset[i] + Internal.getTimeTableValueNoDer2(tableID, i, timeScaled, nextTimeEventScaled, pre(nextTimeEventScaled));
+      end for;
     else
       for i in 1:nout loop
         y[i] = p_offset[i] + Internal.getTimeTableValue(tableID, i, timeScaled, nextTimeEventScaled, pre(nextTimeEventScaled));
@@ -170,7 +174,18 @@ smoothness = 1: Linear interpolation
            = 5: Steffen interpolation: Smooth interpolation by cubic Hermite
                 splines such that y preserves the monotonicity and der(y)
                 is continuous, also if extrapolated.
+           = 6: Modified Akima interpolation: Smooth interpolation by cubic
+                Hermite splines such that der(y) is continuous, also if
+                extrapolated. Additionally, overshoots and edge cases of the
+                original Akima interpolation method are avoided.
 </pre></blockquote></li>
+<li>First and second <strong>derivatives</strong> are provided, with exception of the following two smoothness options.
+<ol>
+<li>No derivatives are provided for interpolation by constant segments.</li>
+<li>No second derivative is provided for linear interpolation.<br>There is a design inconsistency, that it is possible
+to model a signal consisting of constant segments using linear interpolation and duplicated sample points.
+In contrast to interpolation by constant segments, the first derivative is provided as zero.</li>
+</ol></li>
 <li>Values <strong>outside</strong> of the table range, are computed by
     extrapolation according to the setting of parameter <strong>extrapolation</strong>:
 <blockquote><pre>
@@ -213,7 +228,7 @@ timeEvents = 1: Always generate time events at interval boundaries
     <strong>t_max</strong>/<strong>t_maxScaled</strong> are provided and can be
     accessed from the outside of the table object. Whereas <strong>t_min</strong> and
     <strong>t_max</strong> define the scaled abscissa values (using parameter
-    <strong>timeScale</strong>) in SIunits.Time, <strong>t_minScaled</strong> and
+    <strong>timeScale</strong>) in SI.Time, <strong>t_minScaled</strong> and
     <strong>t_maxScaled</strong> define the unitless original abscissa values of
     the table.</li>
 </ul>
@@ -297,6 +312,7 @@ Note, that the first two characters in the file need to be
 \"#1\" (a line comment defining the version number of the file format).
 Afterwards, the corresponding matrix has to be declared
 with type (= \"double\" or \"float\"), name and actual dimensions.
+A valid matrix name (e.g., \"tab1\") must be ASCII encoded and not contain blanks, line breaks, tab (\\t), comma (,) or parentheses.
 Finally, in successive rows of the file, the elements of the matrix
 have to be given. The elements have to be provided as a sequence of
 numbers in row-wise order (therefore a matrix row can span several
