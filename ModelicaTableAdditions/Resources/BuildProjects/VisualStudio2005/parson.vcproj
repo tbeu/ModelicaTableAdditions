@@ -2,8 +2,8 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="8,00"
-	Name="ModelicaIOAdditions"
-	ProjectGUID="{9460FDC9-F7B7-4F5E-B25C-2A0801FBA374}"
+	Name="parson"
+	ProjectGUID="{72201F65-73AE-4BBD-8FA5-F9FD73393878}"
 	RootNamespace="ModelicaTableAdditions"
 	Keyword="Win32Proj"
 	>
@@ -272,7 +272,7 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath="..\..\C-Sources\ModelicaIOAdditions.c"
+				RelativePath="..\..\C-Sources\parson\parson.c"
 				>
 			</File>
 		</Filter>
@@ -281,18 +281,6 @@
 			Filter="h;hpp;hxx;hm;inl;inc;xsd"
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
-			<File
-				RelativePath="..\..\C-Sources\ModelicaIOAdditions.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\C-Sources\ModelicaMatIO.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\C-Sources\ModelicaUtilities.h"
-				>
-			</File>
 			<File
 				RelativePath="..\..\C-Sources\parson\parson.h"
 				>

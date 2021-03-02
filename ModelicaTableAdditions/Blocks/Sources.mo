@@ -22,7 +22,7 @@ package Sources
       annotation (Dialog(
         group="Table data definition",
         enable=tableOnFile,
-        loadSelector(filter="Text files (*.txt);;MATLAB MAT-files (*.mat);;Comma-separated values files (*.csv)",
+        loadSelector(filter="Text files (*.txt);;MATLAB MAT-files (*.mat);;Comma-separated values files (*.csv);;JSON files (*.json)",
             caption="Open file in which table is present")));
     parameter String delimiter="," "Column delimiter character for CSV file"
       annotation (Dialog(
@@ -259,7 +259,7 @@ tableName is \"NoName\" or has only blanks,
 fileName  is \"NoName\" or has only blanks.
 </pre></blockquote></li>
 <li><strong>Read</strong> from a <strong>file</strong> \"fileName\" where the matrix is stored as
-    \"tableName\". CSV, text and MATLAB MAT-file format is possible.
+    \"tableName\". CSV, JSON, text and MATLAB MAT-file format is possible.
     (The text format is described below).
     The MAT-file format comes in four different versions: v4, v6, v7 and v7.3.
     The library supports at least v4, v6 and v7 whereas v7.3 is optional.

@@ -5,6 +5,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ModelicaTableAdditions", "M
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ModelicaIOAdditions", "ModelicaIOAdditions.vcproj", "{9460FDC9-F7B7-4F5E-B25C-2A0801FBA374}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "parson", "parson.vcproj", "{72201F65-73AE-4BBD-8FA5-F9FD73393878}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		LIB Debug|Win32 = LIB Debug|Win32
@@ -29,6 +31,14 @@ Global
 		{9460FDC9-F7B7-4F5E-B25C-2A0801FBA374}.LIB Release|Win32.Build.0 = LIB Release|Win32
 		{9460FDC9-F7B7-4F5E-B25C-2A0801FBA374}.LIB Release|x64.ActiveCfg = LIB Release|x64
 		{9460FDC9-F7B7-4F5E-B25C-2A0801FBA374}.LIB Release|x64.Build.0 = LIB Release|x64
+		{72201F65-73AE-4BBD-8FA5-F9FD73393878}.LIB Debug|Win32.ActiveCfg = LIB Debug|Win32
+		{72201F65-73AE-4BBD-8FA5-F9FD73393878}.LIB Debug|Win32.Build.0 = LIB Debug|Win32
+		{72201F65-73AE-4BBD-8FA5-F9FD73393878}.LIB Debug|x64.ActiveCfg = LIB Debug|x64
+		{72201F65-73AE-4BBD-8FA5-F9FD73393878}.LIB Debug|x64.Build.0 = LIB Debug|x64
+		{72201F65-73AE-4BBD-8FA5-F9FD73393878}.LIB Release|Win32.ActiveCfg = LIB Release|Win32
+		{72201F65-73AE-4BBD-8FA5-F9FD73393878}.LIB Release|Win32.Build.0 = LIB Release|Win32
+		{72201F65-73AE-4BBD-8FA5-F9FD73393878}.LIB Release|x64.ActiveCfg = LIB Release|x64
+		{72201F65-73AE-4BBD-8FA5-F9FD73393878}.LIB Release|x64.Build.0 = LIB Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

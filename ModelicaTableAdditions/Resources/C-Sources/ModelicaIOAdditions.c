@@ -122,6 +122,7 @@ double* ModelicaIOAdditions_readRealTable(_In_z_ const char* fileName,
 #include <locale.h>
 #endif
 #include "ModelicaMatIO.h"
+#include "parson.h"
 
 /* The standard way to detect POSIX is to check _POSIX_VERSION,
  * which is defined in <unistd.h>
@@ -173,6 +174,13 @@ static double* readCsvTable(_In_z_ const char* fileName, _In_z_ const char* tabl
                             _Out_ size_t* m, _Out_ size_t* n, _In_z_ const char* delimiter,
                             int nHeaderLines) MODELICA_NONNULLATTR;
   /* Read a table from a CSV file
+
+     <- RETURN: Pointer to array (row-wise storage) of table values
+  */
+
+static double* readJsonTable(_In_z_ const char* fileName, _In_z_ const char* tableName,
+                            _Out_ size_t* m, _Out_ size_t* n) MODELICA_NONNULLATTR;
+  /* Read a table from a JSON file
 
      <- RETURN: Pointer to array (row-wise storage) of table values
   */
@@ -369,6 +377,7 @@ double* ModelicaIOAdditions_readRealTable(_In_z_ const char* fileName,
     const char* ext;
     int isMatExt = 0;
     int isCsvExt = 0;
+    int isJsonExt = 0;
 
     /* Table file can be either text or binary MATLAB MAT-file */
     ext = strrchr(fileName, '.');
@@ -385,6 +394,10 @@ double* ModelicaIOAdditions_readRealTable(_In_z_ const char* fileName,
                 return NULL;
             }
         }
+        else if (0 == strncmp(ext, ".json", 5) ||
+            0 == strncmp(ext, ".JSON", 5)) {
+            isJsonExt = 1;
+        }
     }
 
     if (verbose == 1) {
@@ -398,6 +411,9 @@ double* ModelicaIOAdditions_readRealTable(_In_z_ const char* fileName,
     }
     else if (isCsvExt == 1) {
         table = readCsvTable(fileName, tableName, m, n, delimiter, nHeaderLines);
+    }
+    else if (isJsonExt == 1) {
+        table = readJsonTable(fileName, tableName, m, n);
     }
     else {
         table = readTxtTable(fileName, tableName, m, n);
@@ -889,6 +905,242 @@ static double* readCsvTable(_In_z_ const char* fileName, _In_z_ const char* tabl
             "\"%s(%lu,%lu)\" from file \"%s\"\n", lineNo,
             tableName, nRow, nCol, fileName);
     }
+    return table;
+}
+
+static JSON_Value_Type json_array_get_type(const JSON_Array *array) {
+    JSON_Value_Type type = JSONNull;
+    size_t i;
+    size_t n = json_array_get_count(array);
+    for (i = 0; i < n; i++) {
+        JSON_Value* value = json_array_get_value(array, i);
+        if (i == 0) {
+            type = json_value_get_type(value);
+        }
+        else if (type != JSONNull && type != json_value_get_type(value)) {
+            type = JSONNull;
+        }
+    }
+    return type;
+}
+
+static JSON_Value_Type json_array_get_type2D(const JSON_Array *array) {
+    JSON_Value_Type type = JSONNull;
+    if (JSONArray == json_array_get_type(array)) {
+        size_t i;
+        size_t n = json_array_get_count(array);
+        for (i = 0; i < n; i++) {
+            const JSON_Array* subArray = json_array_get_array(array, i);
+            if (i == 0) {
+                type = json_array_get_type(subArray);
+            }
+            else if (type != JSONNull && type != json_array_get_type(subArray)) {
+                type = JSONNull;
+            }
+        }
+    }
+    return type;
+}
+
+static int json_array_check_dimensions2D(const JSON_Array *array, size_t* n) {
+    *n = 0;
+    if (JSONArray == json_array_get_type(array)) {
+        size_t i;
+        size_t m = json_array_get_count(array);
+        for (i = 0; i < m; i++) {
+            const JSON_Array* subArray = json_array_get_array(array, i);
+            if (i == 0) {
+                *n = json_array_get_count(subArray);
+            }
+            else if (*n >= 0 && *n != json_array_get_count(subArray)) {
+                return 1; /* Dimension error */
+            }
+        }
+    }
+    return 0; /* OK */
+}
+
+static double* readJsonTable(_In_z_ const char* fileName, _In_z_ const char* tableName,
+                            _Out_ size_t* m, _Out_ size_t* n) {
+    double* table = NULL;
+    size_t nRow = 0;
+    size_t nCol = 0;
+    JSON_Value* rootValue = json_parse_file_with_comments(fileName);
+    JSON_Object* root = json_value_get_object(rootValue);
+
+    if (root == NULL) {
+        *m = 0;
+        *n = 0;
+        json_value_free(rootValue);
+        ModelicaFormatError("Failed to parse file \"%s\"\n", fileName);
+        return NULL;
+    }
+
+    if (json_object_dothas_value_of_type(root, tableName, JSONArray)) {
+        JSON_Value_Type jsonValType;
+        const JSON_Array* jsonArray = json_object_dotget_array(root, tableName);
+        int rc = json_array_check_dimensions2D(jsonArray, &nCol);
+        nRow = json_array_get_count(jsonArray);
+        if (0 != rc) {
+            *m = 0;
+            *n = 0;
+            json_object_clear(root);
+            json_value_free(rootValue);
+            ModelicaFormatError("Array \"%s\" has 2 dimensions, but not all rows have same "
+                "column dimension in file \"%s\"\n", tableName, fileName);
+            return NULL;
+        }
+        if (0 == nRow || 0 == nCol) {
+            *m = 0;
+            *n = 0;
+            json_object_clear(root);
+            json_value_free(rootValue);
+            ModelicaFormatError("Invalid dimensions of array \"%s\" in "
+                "file \"%s\"\n", tableName, fileName);
+            return NULL;
+        }
+
+        table = (double*)malloc(nRow*nCol*sizeof(double));
+        if (NULL == table) {
+            *m = 0;
+            *n = 0;
+            json_object_clear(root);
+            json_value_free(rootValue);
+            ModelicaError("Memory allocation error\n");
+            return table;
+        }
+
+        jsonValType = json_array_get_type2D(jsonArray);
+        if (JSONNumber == jsonValType) {
+            size_t i, j;
+            for (i = 0; i < nRow; i++) {
+                const JSON_Array* subArray = json_array_get_array(jsonArray, i);
+                for (j = 0; j < nCol; j++) {
+                    table[i*nCol + j] = json_array_get_number(subArray, j);
+                }
+            }
+        }
+        else if (JSONString == jsonValType) {
+            size_t i, j;
+
+#if defined(NO_LOCALE)
+            const char * const dec = ".";
+#elif defined(_MSC_VER) && _MSC_VER >= 1400
+            _locale_t loc;
+#elif defined(__GLIBC__) && defined(__GLIBC_MINOR__) && ((__GLIBC__ << 16) + __GLIBC_MINOR__ >= (2 << 16) + 3)
+            locale_t loc;
+#else
+            char* dec;
+#endif
+#if defined(NO_LOCALE)
+#elif defined(_MSC_VER) && _MSC_VER >= 1400
+            loc = _create_locale(LC_NUMERIC, "C");
+#elif defined(__GLIBC__) && defined(__GLIBC_MINOR__) && ((__GLIBC__ << 16) + __GLIBC_MINOR__ >= (2 << 16) + 3)
+            loc = newlocale(LC_NUMERIC, "C", NULL);
+#else
+            dec = localeconv()->decimal_point;
+#endif
+
+            for (i = 0; i < nRow; i++) {
+                const JSON_Array* subArray = json_array_get_array(jsonArray, i);
+                for (j = 0; j < nCol; j++) {
+                    const char* token = json_array_get_string(subArray, j);
+                    if (NULL != token) {
+                        int readError = 0;
+                        char* endptr;
+                        char* tokenCopy = strdup(token);
+                        if (NULL != tokenCopy) {
+#if !defined(NO_LOCALE) && (defined(_MSC_VER) && _MSC_VER >= 1400)
+                            table[i*nCol + j] = _strtod_l(tokenCopy, &endptr, loc);
+                            if (*endptr != 0) {
+                                readError = 1;
+                            }
+#elif !defined(NO_LOCALE) && (defined(__GLIBC__) && defined(__GLIBC_MINOR__) && ((__GLIBC__ << 16) + __GLIBC_MINOR__ >= (2 << 16) + 3))
+                            table[i*nCol + j] = strtod_l(tokenCopy, &endptr, loc);
+                            if (*endptr != 0) {
+                                readError = 1;
+                            }
+#else
+                            if (*dec == '.') {
+                                table[i*nCol + j] = strtod(tokenCopy, &endptr);
+                            }
+                            else if (NULL == strchr(tokenCopy, '.')) {
+                                table[i*nCol + j] = strtod(tokenCopy, &endptr);
+                            }
+                            else {
+                                char* token2 = (char*)malloc(
+                                    (strlen(tokenCopy) + 1)*sizeof(char));
+                                if (NULL != token2) {
+                                    char* p;
+                                    strcpy(token2, tokenCopy);
+                                    p = strchr(token2, '.');
+                                    *p = *dec;
+                                    table[i*nCol + j] = strtod(token2, &endptr);
+                                    if (*endptr != 0) {
+                                        readError = 1;
+                                    }
+                                    free(token2);
+                                }
+                                else {
+                                    *m = 0;
+                                    *n = 0;
+                                    free(table);
+                                    json_object_clear(root);
+                                    json_value_free(rootValue);
+                                    ModelicaError("Memory allocation error\n");
+                                    return NULL;
+                                }
+                            }
+#endif
+
+                            free(tokenCopy);
+                            if (readError != 0) {
+                                *m = 0;
+                                *n = 0;
+                                free(table);
+                                json_object_clear(root);
+                                json_value_free(rootValue);
+                                ModelicaFormatError("Could not parse double value in array \"%s\" in file \"%s\"\n",
+                                    tableName, fileName);
+                                return NULL;
+                            }
+                        }
+                        else {
+                            *m = 0;
+                            *n = 0;
+                            free(table);
+                            json_object_clear(root);
+                            json_value_free(rootValue);
+                            ModelicaError("Memory allocation error\n");
+                            return NULL;
+                        }
+                    }
+                }
+            }
+        }
+        else {
+            *m = 0;
+            *n = 0;
+            free(table);
+            json_object_clear(root);
+            json_value_free(rootValue);
+            ModelicaFormatError("Array \"%s\" is not numeric in file \"%s\"\n",
+                tableName, fileName);
+            return NULL;
+        }
+    }
+    else {
+        *m = 0;
+        *n = 0;
+        json_object_clear(root);
+        json_value_free(rootValue);
+        ModelicaFormatError("Cannot find array \"%s\" in file \"%s\"\n",
+            tableName, fileName);
+        return NULL;
+    }
+
+    *m = nRow;
+    *n = nCol;
     return table;
 }
 
