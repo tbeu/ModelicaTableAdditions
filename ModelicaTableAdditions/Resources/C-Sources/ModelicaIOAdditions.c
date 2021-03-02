@@ -37,6 +37,9 @@
       Modelica.Utilities.Streams.writeRealMatrix
 
    Changelog:
+      Dec. 22, 2020: by Thomas Beutlich
+                     Added reading of CSV files (ticket #1153)
+
       July 08, 2020: by Thomas Beutlich
                      Improved error message if reading text file with zero bytes
                      (ticket #3603)
