@@ -12,7 +12,8 @@ package Test "Test models"
     Sources.CombiTimeTable combiTimeTableJson(
       tableOnFile=true,
       tableName="tab1",
-      fileName=Modelica.Utilities.Files.loadResource("modelica://ModelicaTableAdditions/Resources/Data/Tables/test.json"))
+      fileName=Modelica.Utilities.Files.loadResource("modelica://ModelicaTableAdditions/Resources/Data/Tables/test.json"),
+      columns={2})
       annotation (Placement(transformation(extent={{40,60},{60,80}})));
     Modelica.Blocks.Sources.CombiTimeTable combiTimeTableTxt(
       tableOnFile=true,
@@ -41,14 +42,16 @@ package Test "Test models"
     Tables.CombiTable1Ds combiTable1DsJson(
       tableOnFile=true,
       tableName="tab1",
-      fileName=Modelica.Utilities.Files.loadResource("modelica://ModelicaTableAdditions/Resources/Data/Tables/test.json"))
+      fileName=Modelica.Utilities.Files.loadResource("modelica://ModelicaTableAdditions/Resources/Data/Tables/test.json"),
+      columns={2})
       annotation (Placement(transformation(extent={{40,20},{60,40}})));
     Modelica.Blocks.Sources.ContinuousClock clock22
       annotation (Placement(transformation(extent={{0,-20},{20,0}})));
     Tables.CombiTable1Dv combiTable1DvJson(
       tableOnFile=true,
       tableName="tab1",
-      fileName=Modelica.Utilities.Files.loadResource("modelica://ModelicaTableAdditions/Resources/Data/Tables/test.json"))
+      fileName=Modelica.Utilities.Files.loadResource("modelica://ModelicaTableAdditions/Resources/Data/Tables/test.json"),
+      columns={2})
       annotation (Placement(transformation(extent={{40,-20},{60,0}})));
     Modelica.Blocks.Sources.ContinuousClock clock31
       annotation (Placement(transformation(extent={{80,20},{100,40}})));
@@ -60,7 +63,7 @@ package Test "Test models"
       annotation (Placement(transformation(extent={{120,20},{140,40}})));
     Modelica.Blocks.Sources.ContinuousClock clock32
       annotation (Placement(transformation(extent={{80,-20},{100,0}})));
-    Modelica.Blocks.Tables.CombiTable1Dv combiTable1Dvtxt(
+    Modelica.Blocks.Tables.CombiTable1Dv combiTable1DvTxt(
       tableOnFile=true,
       tableName="tab1",
       fileName=Modelica.Utilities.Files.loadResource("modelica://ModelicaTableAdditions/Resources/Data/Tables/test.txt"),
@@ -69,7 +72,7 @@ package Test "Test models"
   equation
     connect(clock12.y, combiTable1DvCsv.u[1])
       annotation (Line(points={{-59,-10},{-42,-10}}, color={0,0,127}));
-    connect(clock32.y, combiTable1Dvtxt.u[1])
+    connect(clock32.y,combiTable1DvTxt. u[1])
       annotation (Line(points={{101,-10},{118,-10}}, color={0,0,127}));
     connect(clock11.y, combiTable1DsCsv.u)
       annotation (Line(points={{-59,30},{-42,30}}, color={0,0,127}));
