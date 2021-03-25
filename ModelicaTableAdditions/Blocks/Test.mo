@@ -82,7 +82,7 @@ package Test "Test models"
       annotation (Line(points={{21,-10},{38,-10}}, color={0,0,127}));
     connect(clock21.y, combiTable1DsJson.u)
       annotation (Line(points={{21,30},{38,30}}, color={0,0,127}));
-    annotation (Icon(coordinateSystem(preserveAspectRatio=false, extent={{-100,-40},{160,100}})), Diagram(
+    annotation (Icon(coordinateSystem(preserveAspectRatio=false, extent={{-100,-100},{100,100}})), Diagram(
           coordinateSystem(preserveAspectRatio=false, extent={{-100,-40},{160,100}})),
       experiment(StopTime=45));
   end TestTables;
