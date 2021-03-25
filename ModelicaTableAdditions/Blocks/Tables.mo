@@ -1003,7 +1003,7 @@ MATLAB is a registered trademark of The MathWorks, Inc.
     pure function getTimeTableValue
       "Interpolate 1-dim. table where first column is time"
       extends Modelica.Icons.Function;
-      input Modelica.Blocks.Types.ExternalCombiTimeTable tableID "External table object";
+      input ModelicaTableAdditions.Blocks.Types.ExternalCombiTimeTable tableID "External table object";
       input Integer icol "Column number";
       input Real timeIn "(Scaled) time value";
       discrete input Real nextTimeEvent "(Scaled) next time event in table";
@@ -1019,7 +1019,7 @@ MATLAB is a registered trademark of The MathWorks, Inc.
     pure function getTimeTableValueNoDer
       "Interpolate 1-dim. table where first column is time (but do not provide a derivative function)"
       extends Modelica.Icons.Function;
-      input Modelica.Blocks.Types.ExternalCombiTimeTable tableID "External table object";
+      input ModelicaTableAdditions.Blocks.Types.ExternalCombiTimeTable tableID "External table object";
       input Integer icol "Column number";
       input Real timeIn "(Scaled) time value";
       discrete input Real nextTimeEvent "(Scaled) next time event in table";
@@ -1032,7 +1032,7 @@ MATLAB is a registered trademark of The MathWorks, Inc.
     pure function getTimeTableValueNoDer2
       "Interpolate 1-dim. table where first column is time (but do not provide a second derivative function)"
       extends Modelica.Icons.Function;
-      input Modelica.Blocks.Types.ExternalCombiTimeTable tableID "External table object";
+      input ModelicaTableAdditions.Blocks.Types.ExternalCombiTimeTable tableID "External table object";
       input Integer icol "Column number";
       input Real timeIn "(Scaled) time value";
       discrete input Real nextTimeEvent "(Scaled) next time event in table";
@@ -1048,7 +1048,7 @@ MATLAB is a registered trademark of The MathWorks, Inc.
     pure function getDerTimeTableValue
       "Derivative of interpolated 1-dim. table where first column is time"
       extends Modelica.Icons.Function;
-      input Modelica.Blocks.Types.ExternalCombiTimeTable tableID "External table object";
+      input ModelicaTableAdditions.Blocks.Types.ExternalCombiTimeTable tableID "External table object";
       input Integer icol "Column number";
       input Real timeIn "(Scaled) time value";
       discrete input Real nextTimeEvent "(Scaled) next time event in table";
@@ -1066,7 +1066,7 @@ MATLAB is a registered trademark of The MathWorks, Inc.
     pure function getDerTimeTableValueNoDer
       "Derivative of interpolated 1-dim. table where first column is time (but do not provide a derivative function)"
       extends Modelica.Icons.Function;
-      input Modelica.Blocks.Types.ExternalCombiTimeTable tableID "External table object";
+      input ModelicaTableAdditions.Blocks.Types.ExternalCombiTimeTable tableID "External table object";
       input Integer icol "Column number";
       input Real timeIn "(Scaled) time value";
       discrete input Real nextTimeEvent "(Scaled) next time event in table";
@@ -1080,7 +1080,7 @@ MATLAB is a registered trademark of The MathWorks, Inc.
     pure function getDer2TimeTableValue
       "Second derivative of interpolated 1-dim. table where first column is time"
       extends Modelica.Icons.Function;
-      input Modelica.Blocks.Types.ExternalCombiTimeTable tableID "External table object";
+      input ModelicaTableAdditions.Blocks.Types.ExternalCombiTimeTable tableID "External table object";
       input Integer icol "Column number";
       input Real timeIn "(Scaled) time value";
       discrete input Real nextTimeEvent "(Scaled) next time event in table";
@@ -1095,7 +1095,7 @@ MATLAB is a registered trademark of The MathWorks, Inc.
     pure function getTimeTableTmin
       "Return minimum abscissa value of 1-dim. table where first column is time"
       extends Modelica.Icons.Function;
-      input Modelica.Blocks.Types.ExternalCombiTimeTable tableID "External table object";
+      input ModelicaTableAdditions.Blocks.Types.ExternalCombiTimeTable tableID "External table object";
       output Real timeMin "Minimum abscissa value in table";
       external "C" timeMin = ModelicaTableAdditions_CombiTimeTable_minimumTime(tableID)
         annotation (IncludeDirectory="modelica://ModelicaTableAdditions/Resources/C-Sources", Include="#include \"ModelicaTableAdditions.h\"", Library={"ModelicaTableAdditions", "ModelicaIOAdditions", "ModelicaMatIO", "zlib", "parson"});
@@ -1104,7 +1104,7 @@ MATLAB is a registered trademark of The MathWorks, Inc.
     pure function getTimeTableTmax
       "Return maximum abscissa value of 1-dim. table where first column is time"
       extends Modelica.Icons.Function;
-      input Modelica.Blocks.Types.ExternalCombiTimeTable tableID "External table object";
+      input ModelicaTableAdditions.Blocks.Types.ExternalCombiTimeTable tableID "External table object";
       output Real timeMax "Maximum abscissa value in table";
       external "C" timeMax = ModelicaTableAdditions_CombiTimeTable_maximumTime(tableID)
         annotation (IncludeDirectory="modelica://ModelicaTableAdditions/Resources/C-Sources", Include="#include \"ModelicaTableAdditions.h\"", Library={"ModelicaTableAdditions", "ModelicaIOAdditions", "ModelicaMatIO", "zlib", "parson"});
@@ -1113,7 +1113,7 @@ MATLAB is a registered trademark of The MathWorks, Inc.
     pure function getNextTimeEvent
       "Return next time event value of 1-dim. table where first column is time"
       extends Modelica.Icons.Function;
-      input Modelica.Blocks.Types.ExternalCombiTimeTable tableID "External table object";
+      input ModelicaTableAdditions.Blocks.Types.ExternalCombiTimeTable tableID "External table object";
       input Real timeIn "(Scaled) time value";
       output Real nextTimeEvent "(Scaled) next time event in table";
       external "C" nextTimeEvent = ModelicaTableAdditions_CombiTimeTable_nextTimeEvent(tableID, timeIn)
@@ -1122,7 +1122,7 @@ MATLAB is a registered trademark of The MathWorks, Inc.
 
     pure function getTable1DValue "Interpolate 1-dim. table defined by matrix"
       extends Modelica.Icons.Function;
-      input Modelica.Blocks.Types.ExternalCombiTable1D tableID "External table object";
+      input ModelicaTableAdditions.Blocks.Types.ExternalCombiTable1D tableID "External table object";
       input Integer icol "Column number";
       input Real u "Abscissa value";
       output Real y "Interpolated value";
@@ -1134,7 +1134,7 @@ MATLAB is a registered trademark of The MathWorks, Inc.
     pure function getTable1DValueNoDer
       "Interpolate 1-dim. table defined by matrix (but do not provide a derivative function)"
       extends Modelica.Icons.Function;
-      input Modelica.Blocks.Types.ExternalCombiTable1D tableID "External table object";
+      input ModelicaTableAdditions.Blocks.Types.ExternalCombiTable1D tableID "External table object";
       input Integer icol "Column number";
       input Real u "Abscissa value";
       output Real y "Interpolated value";
@@ -1145,7 +1145,7 @@ MATLAB is a registered trademark of The MathWorks, Inc.
     pure function getTable1DValueNoDer2
       "Interpolate 1-dim. table defined by matrix (but do not provide a second derivative function)"
       extends Modelica.Icons.Function;
-      input Modelica.Blocks.Types.ExternalCombiTable1D tableID "External table object";
+      input ModelicaTableAdditions.Blocks.Types.ExternalCombiTable1D tableID "External table object";
       input Integer icol "Column number";
       input Real u "Abscissa value";
       output Real y "Interpolated value";
@@ -1157,7 +1157,7 @@ MATLAB is a registered trademark of The MathWorks, Inc.
     pure function getDerTable1DValue
       "Derivative of interpolated 1-dim. table defined by matrix"
       extends Modelica.Icons.Function;
-      input Modelica.Blocks.Types.ExternalCombiTable1D tableID "External table object";
+      input ModelicaTableAdditions.Blocks.Types.ExternalCombiTable1D tableID "External table object";
       input Integer icol "Column number";
       input Real u "Abscissa value";
       input Real der_u "Derivative of abscissa value";
@@ -1170,7 +1170,7 @@ MATLAB is a registered trademark of The MathWorks, Inc.
     pure function getDerTable1DValueNoDer
       "Derivative of interpolated 1-dim. table defined by matrix (but do not provide a second derivative function)"
       extends Modelica.Icons.Function;
-      input Modelica.Blocks.Types.ExternalCombiTable1D tableID "External table object";
+      input ModelicaTableAdditions.Blocks.Types.ExternalCombiTable1D tableID "External table object";
       input Integer icol "Column number";
       input Real u "Abscissa value";
       input Real der_u "Derivative of abscissa value";
@@ -1182,7 +1182,7 @@ MATLAB is a registered trademark of The MathWorks, Inc.
     pure function getDer2Table1DValue
       "Second derivative of interpolated 1-dim. table defined by matrix"
       extends Modelica.Icons.Function;
-      input Modelica.Blocks.Types.ExternalCombiTable1D tableID "External table object";
+      input ModelicaTableAdditions.Blocks.Types.ExternalCombiTable1D tableID "External table object";
       input Integer icol "Column number";
       input Real u "Abscissa value";
       input Real der_u "Derivative of abscissa value";
@@ -1195,7 +1195,7 @@ MATLAB is a registered trademark of The MathWorks, Inc.
     pure function getTable1DAbscissaUmin
       "Return minimum abscissa value of 1-dim. table defined by matrix"
       extends Modelica.Icons.Function;
-      input Modelica.Blocks.Types.ExternalCombiTable1D tableID "External table object";
+      input ModelicaTableAdditions.Blocks.Types.ExternalCombiTable1D tableID "External table object";
       output Real uMin "Minimum abscissa value in table";
       external "C" uMin = ModelicaTableAdditions_CombiTable1D_minimumAbscissa(tableID)
         annotation (IncludeDirectory="modelica://ModelicaTableAdditions/Resources/C-Sources", Include="#include \"ModelicaTableAdditions.h\"", Library={"ModelicaTableAdditions", "ModelicaIOAdditions", "ModelicaMatIO", "zlib", "parson"});
@@ -1204,7 +1204,7 @@ MATLAB is a registered trademark of The MathWorks, Inc.
     pure function getTable1DAbscissaUmax
       "Return maximum abscissa value of 1-dim. table defined by matrix"
       extends Modelica.Icons.Function;
-      input Modelica.Blocks.Types.ExternalCombiTable1D tableID "External table object";
+      input ModelicaTableAdditions.Blocks.Types.ExternalCombiTable1D tableID "External table object";
       output Real uMax "Maximum abscissa value in table";
       external "C" uMax = ModelicaTableAdditions_CombiTable1D_maximumAbscissa(tableID)
         annotation (IncludeDirectory="modelica://ModelicaTableAdditions/Resources/C-Sources", Include="#include \"ModelicaTableAdditions.h\"", Library={"ModelicaTableAdditions", "ModelicaIOAdditions", "ModelicaMatIO", "zlib", "parson"});
@@ -1212,7 +1212,7 @@ MATLAB is a registered trademark of The MathWorks, Inc.
 
     pure function getTable2DValue "Interpolate 2-dim. table defined by matrix"
       extends Modelica.Icons.Function;
-      input Modelica.Blocks.Types.ExternalCombiTable2D tableID "External table object";
+      input ModelicaTableAdditions.Blocks.Types.ExternalCombiTable2D tableID "External table object";
       input Real u1 "Value of first independent variable";
       input Real u2 "Value of second independent variable";
       output Real y "Interpolated value";
@@ -1224,7 +1224,7 @@ MATLAB is a registered trademark of The MathWorks, Inc.
     pure function getTable2DValueNoDer
       "Interpolate 2-dim. table defined by matrix (but do not provide a derivative function)"
       extends Modelica.Icons.Function;
-      input Modelica.Blocks.Types.ExternalCombiTable2D tableID "External table object";
+      input ModelicaTableAdditions.Blocks.Types.ExternalCombiTable2D tableID "External table object";
       input Real u1 "Value of first independent variable";
       input Real u2 "Value of second independent variable";
       output Real y "Interpolated value";
@@ -1235,7 +1235,7 @@ MATLAB is a registered trademark of The MathWorks, Inc.
     pure function getTable2DValueNoDer2
       "Interpolate 2-dim. table defined by matrix (but do not provide a second derivative function)"
       extends Modelica.Icons.Function;
-      input Modelica.Blocks.Types.ExternalCombiTable2D tableID "External table object";
+      input ModelicaTableAdditions.Blocks.Types.ExternalCombiTable2D tableID "External table object";
       input Real u1 "Value of first independent variable";
       input Real u2 "Value of second independent variable";
       output Real y "Interpolated value";
@@ -1247,7 +1247,7 @@ MATLAB is a registered trademark of The MathWorks, Inc.
     pure function getDerTable2DValue
       "Derivative of interpolated 2-dim. table defined by matrix"
       extends Modelica.Icons.Function;
-      input Modelica.Blocks.Types.ExternalCombiTable2D tableID "External table object";
+      input ModelicaTableAdditions.Blocks.Types.ExternalCombiTable2D tableID "External table object";
       input Real u1 "Value of first independent variable";
       input Real u2 "Value of second independent variable";
       input Real der_u1 "Derivative of first independent variable";
@@ -1261,7 +1261,7 @@ MATLAB is a registered trademark of The MathWorks, Inc.
     pure function getDerTable2DValueNoDer
       "Derivative of interpolated 2-dim. table defined by matrix (but do not provide a second derivative function)"
       extends Modelica.Icons.Function;
-      input Modelica.Blocks.Types.ExternalCombiTable2D tableID "External table object";
+      input ModelicaTableAdditions.Blocks.Types.ExternalCombiTable2D tableID "External table object";
       input Real u1 "Value of first independent variable";
       input Real u2 "Value of second independent variable";
       input Real der_u1 "Derivative of first independent variable";
@@ -1274,7 +1274,7 @@ MATLAB is a registered trademark of The MathWorks, Inc.
     pure function getDer2Table2DValue
       "Second derivative of interpolated 2-dim. table defined by matrix"
       extends Modelica.Icons.Function;
-      input Modelica.Blocks.Types.ExternalCombiTable2D tableID "External table object";
+      input ModelicaTableAdditions.Blocks.Types.ExternalCombiTable2D tableID "External table object";
       input Real u1 "Value of first independent variable";
       input Real u2 "Value of second independent variable";
       input Real der_u1 "Derivative of first independent variable";
@@ -1289,7 +1289,7 @@ MATLAB is a registered trademark of The MathWorks, Inc.
     pure function getTable2DAbscissaUmin
       "Return minimum abscissa value of 2-dim. table defined by matrix"
       extends Modelica.Icons.Function;
-      input Modelica.Blocks.Types.ExternalCombiTable2D tableID "External table object";
+      input ModelicaTableAdditions.Blocks.Types.ExternalCombiTable2D tableID "External table object";
       output Real uMin[2] "Minimum abscissa value in table";
       external "C" ModelicaTableAdditions_CombiTable2D_minimumAbscissa(tableID, uMin)
         annotation (IncludeDirectory="modelica://ModelicaTableAdditions/Resources/C-Sources", Include="#include \"ModelicaTableAdditions.h\"", Library={"ModelicaTableAdditions", "ModelicaIOAdditions", "ModelicaMatIO", "zlib", "parson"});
@@ -1298,7 +1298,7 @@ MATLAB is a registered trademark of The MathWorks, Inc.
     pure function getTable2DAbscissaUmax
       "Return maximum abscissa value of 2-dim. table defined by matrix"
       extends Modelica.Icons.Function;
-      input Modelica.Blocks.Types.ExternalCombiTable2D tableID "External table object";
+      input ModelicaTableAdditions.Blocks.Types.ExternalCombiTable2D tableID "External table object";
       output Real uMax[2] "Maximum abscissa value in table";
       external "C" ModelicaTableAdditions_CombiTable2D_maximumAbscissa(tableID, uMax)
         annotation (IncludeDirectory="modelica://ModelicaTableAdditions/Resources/C-Sources", Include="#include \"ModelicaTableAdditions.h\"", Library={"ModelicaTableAdditions", "ModelicaIOAdditions", "ModelicaMatIO", "zlib", "parson"});
