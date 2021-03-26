@@ -178,6 +178,13 @@ static double* readCsvTable(_In_z_ const char* fileName, _In_z_ const char* tabl
      <- RETURN: Pointer to array (row-wise storage) of table values
   */
 
+static double* readEpwTable(_In_z_ const char* fileName, _In_z_ const char* tableName,
+                            _Out_ size_t* m, _Out_ size_t* n) MODELICA_NONNULLATTR;
+  /* Read a table from a EPW file
+
+     <- RETURN: Pointer to array (row-wise storage) of table values
+  */
+
 static double* readJsonTable(_In_z_ const char* fileName, _In_z_ const char* tableName,
                             _Out_ size_t* m, _Out_ size_t* n) MODELICA_NONNULLATTR;
   /* Read a table from a JSON file
@@ -378,8 +385,9 @@ double* ModelicaIOAdditions_readRealTable(_In_z_ const char* fileName,
     int isMatExt = 0;
     int isCsvExt = 0;
     int isJsonExt = 0;
+    int isEpwExt = 0;
 
-    /* Table file can be either text or binary MATLAB MAT-file */
+    /* Table file can be either CSV, EPW, JSON, text or binary MATLAB MAT-file */
     ext = strrchr(fileName, '.');
     if (NULL != ext) {
         if (0 == strncmp(ext, ".mat", 4) ||
@@ -393,6 +401,10 @@ double* ModelicaIOAdditions_readRealTable(_In_z_ const char* fileName,
                 ModelicaFormatError("Invalid column delimiter \"%s\", must be a single character.\n", delimiter);
                 return NULL;
             }
+        }
+        else if (0 == strncmp(ext, ".epw", 4) ||
+            0 == strncmp(ext, ".EPW", 4)) {
+            isEpwExt = 1;
         }
         else if (0 == strncmp(ext, ".json", 5) ||
             0 == strncmp(ext, ".JSON", 5)) {
@@ -411,6 +423,9 @@ double* ModelicaIOAdditions_readRealTable(_In_z_ const char* fileName,
     }
     else if (isCsvExt == 1) {
         table = readCsvTable(fileName, tableName, m, n, delimiter, nHeaderLines);
+    }
+    else if (isEpwExt == 1) {
+        table = readEpwTable(fileName, tableName, m, n);
     }
     else if (isJsonExt == 1) {
         table = readJsonTable(fileName, tableName, m, n);
@@ -904,6 +919,378 @@ static double* readCsvTable(_In_z_ const char* fileName, _In_z_ const char* tabl
             "Error in line %lu when reading numeric data of matrix "
             "\"%s(%lu,%lu)\" from file \"%s\"\n", lineNo,
             tableName, nRow, nCol, fileName);
+    }
+    return table;
+}
+
+static double epwSimulationTime(const long* time) {
+    double simtime;
+
+    switch (time[1]) { /* Month to days */
+        case 1: simtime = 0; break;
+        case 2: simtime = 31; break;
+        case 3: simtime = 59; break;
+        case 4: simtime = 90; break;
+        case 5: simtime = 120; break;
+        case 6: simtime = 151; break;
+        case 7: simtime = 181; break;
+        case 8: simtime = 212; break;
+        case 9: simtime = 243; break;
+        case 10: simtime = 273; break;
+        case 11: simtime = 304; break;
+        case 12: simtime = 334; break;
+        default: simtime = 0;
+    }
+
+    simtime = 24 * (simtime + (time[2] - 1)); /* Days to hours */
+    simtime = 60 * (simtime  +time[3]); /* Hours to minutes */
+    simtime = 60 * (simtime + time[4]); /* Minutes to seconds */
+
+    return simtime;
+}
+
+static double* readEpwTable(_In_z_ const char* fileName, _In_z_ const char* tableName,
+                            _Out_ size_t* m, _Out_ size_t* n) {
+    double* table = NULL;
+    char* buf;
+    int bufLen = LINE_BUFFER_LENGTH;
+    FILE* fp;
+    int readError;
+    unsigned long nRow = 0;
+    unsigned long nCol = 30;
+    unsigned long lineNo = 1;
+    const unsigned long nHeaderLines = 8;
+#if defined(NO_LOCALE)
+    const char * const dec = ".";
+#elif defined(_MSC_VER) && _MSC_VER >= 1400
+    _locale_t loc;
+#elif defined(__GLIBC__) && defined(__GLIBC_MINOR__) && ((__GLIBC__ << 16) + __GLIBC_MINOR__ >= (2 << 16) + 3)
+    locale_t loc;
+#else
+    char* dec;
+#endif
+    const char delimTable[3] = ", ";
+    const char* missData[30] = {"",
+        /*  1 */ "99.9",
+        /*  2 */ "99.9",
+        /*  3 */ "999",
+        /*  4 */ "999999",
+        /*  5 */ "9999",
+        /*  6 */ "9999",
+        /*  7 */ "9999",
+        /*  8 */ "9999",
+        /*  9 */ "9999",
+        /* 10 */ "9999",
+        /* 11 */ "999999",
+        /* 12 */ "999999",
+        /* 13 */ "999999",
+        /* 14 */ "9999",
+        /* 15 */ "999",
+        /* 16 */ "999",
+        /* 17 */ "99",
+        /* 18 */ "99",
+        /* 19 */ "9999",
+        /* 20 */ "99999",
+        /* 21 */ "9",
+        /* 22 */ "9",
+        /* 23 */ "999",
+        /* 24 */ "999",
+        /* 25 */ "999",
+        /* 26 */ "99"
+        /* 27 */ "",
+        /* 28 */ "",
+        /* 29 */ ""
+    };
+    const int checkData[30] = {0,
+        /*  1 */ 1,
+        /*  2 */ 1,
+        /*  3 */ 1,
+        /*  4 */ 1,
+        /*  5 */ 0,
+        /*  6 */ 0,
+        /*  7 */ 0,
+        /*  8 */ 1,
+        /*  9 */ 0,
+        /* 10 */ 1,
+        /* 11 */ 0,
+        /* 12 */ 0,
+        /* 13 */ 0,
+        /* 14 */ 0,
+        /* 15 */ 0,
+        /* 16 */ 0,
+        /* 17 */ 1,
+        /* 18 */ 1,
+        /* 19 */ 0,
+        /* 20 */ 1,
+        /* 21 */ 0,
+        /* 22 */ 0,
+        /* 23 */ 0,
+        /* 24 */ 0,
+        /* 25 */ 0,
+        /* 26 */ 0,
+        /* 27 */ 0,
+        /* 28 */ 0,
+        /* 29 */ 0
+    };
+
+    fp = fopen(fileName, "r");
+    if (NULL == fp) {
+        ModelicaFormatError("Not possible to open file \"%s\": "
+            "No such file or directory\n", fileName);
+        return NULL;
+    }
+
+    buf = (char*)malloc(LINE_BUFFER_LENGTH*sizeof(char));
+    if (NULL == buf) {
+        fclose(fp);
+        ModelicaError("Memory allocation error\n");
+        return NULL;
+    }
+
+    /* Ignore file header */
+    while (lineNo <= nHeaderLines) {
+        if ((readError = readLine(&buf, &bufLen, fp)) != 0) {
+            free(buf);
+            fclose(fp);
+            if (readError < 0) {
+                ModelicaFormatError(
+                    "Error reading line %lu from file \"%s\": "
+                    "End-Of-File reached.\n", lineNo, fileName);
+            }
+            return NULL;
+        }
+        lineNo++;
+    }
+
+#if defined(NO_LOCALE)
+#elif defined(_MSC_VER) && _MSC_VER >= 1400
+    loc = _create_locale(LC_NUMERIC, "C");
+#elif defined(__GLIBC__) && defined(__GLIBC_MINOR__) && ((__GLIBC__ << 16) + __GLIBC_MINOR__ >= (2 << 16) + 3)
+    loc = newlocale(LC_NUMERIC, "C", NULL);
+#else
+    dec = localeconv()->decimal_point;
+#endif
+
+    /* First pass: Loop over lines of file and determine dimensions */
+    while (readLine(&buf, &bufLen, fp) == 0) {
+        nRow++;
+    }
+
+    /* Reset for second pass */
+    fseek(fp, 0, SEEK_SET);
+    lineNo = 1;
+    /* Ignore file header */
+    while (lineNo <= nHeaderLines) {
+        readLine(&buf, &bufLen, fp);
+        lineNo++;
+    }
+    lineNo--;
+
+    {
+        size_t i = 0;
+        long line9min = 0;
+        long line10min = 0;
+
+        table = (double*)malloc(nRow*nCol*sizeof(double));
+        if (NULL == table) {
+            *m = 0;
+            *n = 0;
+            free(buf);
+            fclose(fp);
+#if defined(NO_LOCALE)
+#elif defined(_MSC_VER) && _MSC_VER >= 1400
+            _free_locale(loc);
+#elif defined(__GLIBC__) && defined(__GLIBC_MINOR__) && ((__GLIBC__ << 16) + __GLIBC_MINOR__ >= (2 << 16) + 3)
+            freelocale(loc);
+#endif
+            ModelicaError("Memory allocation error\n");
+            return table;
+        }
+
+        readError = 0;
+        /* Loop over rows and store table row-wise */
+        for (i = 1; i < nRow; i++) {
+            long time[5];
+            size_t j = 0;
+            char* token;
+            char* endptr;
+#if defined(_POSIX_) || (defined(_MSC_VER) && _MSC_VER >= 1400)
+            char* nextToken = NULL;
+#endif
+            if (readError != 0) {
+                break;
+            }
+
+            lineNo++;
+            readError = readLine(&buf, &bufLen, fp) != 0;
+#if defined(_POSIX_) || (defined(_MSC_VER) && _MSC_VER >= 1400)
+            nextToken = NULL;
+#endif
+            token = strtok_r(buf, delimTable, &nextToken);
+            /* Read year, month, date, hour and minute */
+            for (j = 0; j < 5; j++) {
+                if (token == NULL) {
+                    readError = 1;
+                    break;
+                }
+#if !defined(NO_LOCALE) && (defined(_MSC_VER) && _MSC_VER >= 1400)
+                time[j] = _strtol_l(token, &endptr, 10, loc);
+                if (*endptr != 0) {
+                    readError = 1;
+                }
+#elif !defined(NO_LOCALE) && (defined(__GLIBC__) && defined(__GLIBC_MINOR__) && ((__GLIBC__ << 16) + __GLIBC_MINOR__ >= (2 << 16) + 3))
+                time[j] = strtol_l(token, &endptr, 10, loc);
+                if (*endptr != 0) {
+                    readError = 1;
+                }
+#else
+                time[j] = strtol(token, &endptr, 10);
+                if (*endptr != 0) {
+                    readError = 1;
+                }
+#endif
+                if (readError == 0) {
+                    token = strtok_r(NULL, delimTable, &nextToken);
+                }
+                else {
+                    break;
+                }
+            }
+
+            if (readError != 0) {
+                break;
+            }
+
+            /* Store minutes field of 9th and 10th line */
+            if (9 == lineNo) {
+                line9min = time[4];
+            }
+            else if (10 == lineNo) {
+                line10min = time[4];
+            }
+
+            /* Convert the time in seconds */
+            table[i*nCol] = epwSimulationTime(time);
+
+            /* Skip the flag for data quality */
+            token = strtok_r(NULL, delimTable, &nextToken);
+
+            for (j = 1; j < 30; j++) {
+                if (token == NULL) {
+                    readError = 1;
+                    break;
+                }
+                else if (checkData[j] && 0 == strcmp(token, missData[j])) {
+                    if (9 == lineNo) {
+                        readError = 9;
+                    }
+                    else {
+                        if (20 == j && (
+                            0 == strcmp(token, "88888") ||
+                            0 == strcmp(token, "77777") ||
+                            0 == strcmp(token, "99999"))) {
+                            table[i*nCol + j] = 2000.;
+                        }
+                        else {
+                            table[i*nCol + j] = table[(i - 1)*nCol + j];
+                        }
+                        ModelicaFormatWarning(
+                            "Missing data in line %lu when reading numeric data of matrix "
+                            "\"%s(%lu,%lu)\" from file \"%s\"\n", lineNo,
+                            tableName, nRow, nCol, fileName);
+                    }
+                }
+#if !defined(NO_LOCALE) && (defined(_MSC_VER) && _MSC_VER >= 1400)
+                table[i*nCol + j] = _strtod_l(token, &endptr, loc);
+                if (*endptr != 0) {
+                    readError = 1;
+                }
+#elif !defined(NO_LOCALE) && (defined(__GLIBC__) && defined(__GLIBC_MINOR__) && ((__GLIBC__ << 16) + __GLIBC_MINOR__ >= (2 << 16) + 3))
+                table[i*nCol + j] = strtod_l(token, &endptr, loc);
+                if (*endptr != 0) {
+                    readError = 1;
+                }
+#else
+                if (*dec == '.') {
+                    table[i*nCol + j] = strtod(token, &endptr);
+                }
+                else if (NULL == strchr(token, '.')) {
+                    table[i*nCol + j] = strtod(token, &endptr);
+                }
+                else {
+                    char* token2 = (char*)malloc(
+                        (strlen(token) + 1)*sizeof(char));
+                    if (NULL != token2) {
+                        char* p;
+                        strcpy(token2, token);
+                        p = strchr(token2, '.');
+                        *p = *dec;
+                        table[i*nCol + j] = strtod(token2, &endptr);
+                        if (*endptr != 0) {
+                            readError = 1;
+                        }
+                        free(token2);
+                    }
+                    else {
+                        *m = 0;
+                        *n = 0;
+                        free(buf);
+                        fclose(fp);
+                        readError = 1;
+                        ModelicaError("Memory allocation error\n");
+                        break;
+                    }
+                }
+#endif
+                if (readError == 0) {
+                    token = strtok_r(NULL, delimTable, &nextToken);
+                }
+                else {
+                    break;
+                }
+            }
+        }
+
+        /* Use the data at first recorded time for time equal to 0s */
+        memcpy(&table[1], &table[31], 29*sizeof(double));
+
+        /* One hour off if minute fields are available */
+        if (line9min > 0 || line10min > 0) {
+            for (i = 1; i < nRow; i++) {
+                table[i*nCol] -= 3600.;
+            }
+        }
+    }
+
+    free(buf);
+    fclose(fp);
+#if defined(NO_LOCALE)
+#elif defined(_MSC_VER) && _MSC_VER >= 1400
+    _free_locale(loc);
+#elif defined(__GLIBC__) && defined(__GLIBC_MINOR__) && ((__GLIBC__ << 16) + __GLIBC_MINOR__ >= (2 << 16) + 3)
+    freelocale(loc);
+#endif
+
+    if (readError == 0) {
+        *m = (size_t)nRow;
+        *n = (size_t)nCol;
+    }
+    else {
+        free(table);
+        table = NULL;
+        *m = 0;
+        *n = 0;
+        if (readError == 9) {
+            ModelicaFormatError(
+                "Error: Missing data in line 9 when reading numeric data of matrix "
+                "\"%s(%lu,%lu)\" from file \"%s\"\n", tableName, nRow, nCol, fileName);
+        }
+        else {
+            ModelicaFormatError(
+                "Error in line %lu when reading numeric data of matrix "
+                "\"%s(%lu,%lu)\" from file \"%s\"\n", lineNo,
+                tableName, nRow, nCol, fileName);
+        }
     }
     return table;
 }

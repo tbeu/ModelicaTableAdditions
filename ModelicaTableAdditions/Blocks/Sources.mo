@@ -22,7 +22,7 @@ package Sources
       annotation (Dialog(
         group="Table data definition",
         enable=tableOnFile,
-        loadSelector(filter="Text files (*.txt);;MATLAB MAT-files (*.mat);;Comma-separated values files (*.csv);;JSON files (*.json)",
+        loadSelector(filter="Text files (*.txt);;MATLAB MAT-files (*.mat);;Comma-separated values files (*.csv);;EnergyPlus Weather files (*.epw);;JSON files (*.json)",
             caption="Open file in which table is present")));
     parameter String delimiter="," "Column delimiter character for CSV file"
       annotation (Dialog(
@@ -74,7 +74,7 @@ package Sources
       "Offsets of output signals";
     parameter ModelicaTableAdditions.Blocks.Types.ExternalCombiTimeTable tableID=
         ModelicaTableAdditions.Blocks.Types.ExternalCombiTimeTable(
-          if tableOnFile then if isCsvExt then "Values" else tableName else "NoName",
+          if tableOnFile then if isCsvExt then "Values" elseif isEpwExt then "Data" else tableName else "NoName",
           if tableOnFile and fileName <> "NoName" and not Modelica.Utilities.Strings.isEmpty(fileName) then fileName else "NoName",
           table,
           startTime/timeScale,
@@ -92,9 +92,10 @@ package Sources
       "Next scaled time event instant";
     Real timeScaled "Scaled time";
     final parameter Boolean isCsvExt = if tableOnFile then Modelica.Utilities.Strings.findLast(fileName, ".csv", 0, false) + 3 == Modelica.Utilities.Strings.length(fileName) else false;
+    final parameter Boolean isEpwExt = if tableOnFile then Modelica.Utilities.Strings.findLast(fileName, ".epw", 0, false) + 3 == Modelica.Utilities.Strings.length(fileName) else false;
   equation
     if tableOnFile then
-      assert(tableName <> "NoName" or isCsvExt,
+      assert(tableName <> "NoName" or isCsvExt or isEpwExt,
         "tableOnFile = true and no table name given");
     else
       assert(size(table, 1) > 0 and size(table, 2) > 0,
@@ -259,7 +260,7 @@ tableName is \"NoName\" or has only blanks,
 fileName  is \"NoName\" or has only blanks.
 </pre></blockquote></li>
 <li><strong>Read</strong> from a <strong>file</strong> \"fileName\" where the matrix is stored as
-    \"tableName\". CSV, JSON, text and MATLAB MAT-file format is possible.
+    \"tableName\". CSV, EPW, JSON, text and MATLAB MAT-file format is possible.
     (The text format is described below).
     The MAT-file format comes in four different versions: v4, v6, v7 and v7.3.
     The library supports at least v4, v6 and v7 whereas v7.3 is optional.
@@ -361,7 +362,7 @@ MATLAB is a registered trademark of The MathWorks, Inc.
         fillPattern=FillPattern.Solid,
         extent={{-48,-50},{2,70}}),
       Line(points={{-48,-50},{-48,70},{52,70},{52,-50},{-48,-50},{-48,-20},{52,-20},{52,10},{-48,10},{-48,40},{52,40},{52,70},{2,70},{2,-51}}),
-      Text(lineColor={0,0,255},extent={{-85,110},{85,65}},textString=DynamicSelect("csv", if isCsvExt then if delimiter == " " then "c s v" elseif delimiter == "," then "c,s,v" elseif delimiter == "\t" then "c\\ts\\tv" elseif delimiter == ";" then "c;s;v" else "csv" else "")),
+      Text(lineColor={0,0,255},extent={{-85,110},{85,65}},textString=DynamicSelect("csv", if isCsvExt then if delimiter == " " then "c s v" elseif delimiter == "," then "c,s,v" elseif delimiter == "\t" then "c\\ts\\tv" elseif delimiter == ";" then "c;s;v" else "csv" elseif isEpwExt then "epw" else "")),
       Text(extent={{-150,-150},{150,-110}}, textString="tableOnFile=%tableOnFile")}));
   end CombiTimeTable;
 end Sources;

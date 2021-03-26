@@ -6,6 +6,7 @@
 *.c text
 *.csv text
 *.def text
+*.epw text
 *.h text
 *.htm* text
 *.ini text
