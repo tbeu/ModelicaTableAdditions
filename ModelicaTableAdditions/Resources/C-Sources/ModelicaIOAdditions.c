@@ -1183,6 +1183,7 @@ static double* readEpwTable(_In_z_ const char* fileName, _In_z_ const char* tabl
                 else if (checkData[j] && 0 == strcmp(token, missData[j])) {
                     if (9 == lineNo) {
                         readError = 9;
+                        break;
                     }
                     else {
                         if (20 == j && (
