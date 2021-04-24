@@ -923,27 +923,27 @@ static double* readCsvTable(_In_z_ const char* fileName, _In_z_ const char* tabl
     return table;
 }
 
-static double epwSimulationTime(const long* time) {
+static double epwSimulationTime(const long* time, int leap) {
     double simtime;
 
     switch (time[1]) { /* Month to days */
         case 1: simtime = 0; break;
         case 2: simtime = 31; break;
-        case 3: simtime = 59; break;
-        case 4: simtime = 90; break;
-        case 5: simtime = 120; break;
-        case 6: simtime = 151; break;
-        case 7: simtime = 181; break;
-        case 8: simtime = 212; break;
-        case 9: simtime = 243; break;
-        case 10: simtime = 273; break;
-        case 11: simtime = 304; break;
-        case 12: simtime = 334; break;
+        case 3: simtime = 59 + leap; break;
+        case 4: simtime = 90 + leap; break;
+        case 5: simtime = 120 + leap; break;
+        case 6: simtime = 151 + leap; break;
+        case 7: simtime = 181 + leap; break;
+        case 8: simtime = 212 + leap; break;
+        case 9: simtime = 243 + leap; break;
+        case 10: simtime = 273 + leap; break;
+        case 11: simtime = 304 + leap; break;
+        case 12: simtime = 334 + leap; break;
         default: simtime = 0;
     }
 
     simtime = 24 * (simtime + (time[2] - 1)); /* Days to hours */
-    simtime = 60 * (simtime  +time[3]); /* Hours to minutes */
+    simtime = 60 * (simtime + time[3]); /* Hours to minutes */
     simtime = 60 * (simtime + time[4]); /* Minutes to seconds */
 
     return simtime;
@@ -956,6 +956,8 @@ static double* readEpwTable(_In_z_ const char* fileName, _In_z_ const char* tabl
     int bufLen = LINE_BUFFER_LENGTH;
     FILE* fp;
     int readError;
+    int leap = 0;
+    unsigned long foundFeb29 = 0;
     unsigned long nRow = 0;
     unsigned long nCol = 30;
     unsigned long lineNo = 1;
@@ -1059,6 +1061,11 @@ static double* readEpwTable(_In_z_ const char* fileName, _In_z_ const char* tabl
             }
             return NULL;
         }
+        if (5 == lineNo && 0 == strncmp(buf, "HOLIDAYS/DAYLIGHT SAVINGS,Yes", 27)) {
+            ModelicaFormatMessage("Leap year observed in line %lu of file "
+                "\"%s\".\n", lineNo, fileName);
+            leap = 1;
+        }
         lineNo++;
     }
 
@@ -1088,6 +1095,7 @@ static double* readEpwTable(_In_z_ const char* fileName, _In_z_ const char* tabl
 
     {
         size_t i = 0;
+        size_t k = 0;
         long line9min = 0;
         long line10min = 0;
 
@@ -1109,7 +1117,7 @@ static double* readEpwTable(_In_z_ const char* fileName, _In_z_ const char* tabl
 
         readError = 0;
         /* Loop over rows and store table row-wise */
-        for (i = 1; i < nRow; i++) {
+        for (k = 1; k < nRow; k++) {
             long time[5];
             size_t j = 0;
             char* token;
@@ -1169,8 +1177,29 @@ static double* readEpwTable(_In_z_ const char* fileName, _In_z_ const char* tabl
                 line10min = time[4];
             }
 
+            /* Check for 29th of February */
+            if (2 == time[1] && 29 == time[2]) {
+                foundFeb29++;
+                if (0 == leap) {
+                    /* Ignore leap year data if not specified */
+                    ModelicaFormatMessage(
+                        "Ignoring data for 29th of February in line %lu when reading weather data of "
+                        "matrix \"%s(%lu,%lu)\" from file \"%s\"\n", lineNo, tableName, nRow, nCol,
+                        fileName);
+                    continue;
+                }
+
+            }
+            /* Check if valid leap year data */
+            else if (1 == leap && time[1] > 2 && 0 == foundFeb29) {
+                readError = 29;
+                break;
+            }
+
+            i++;
+
             /* Convert the time in seconds */
-            table[i*nCol] = epwSimulationTime(time);
+            table[i*nCol] = epwSimulationTime(time, leap);
 
             /* Skip the flag for data quality */
             token = strtok_r(NULL, delimTable, &nextToken);
@@ -1196,7 +1225,7 @@ static double* readEpwTable(_In_z_ const char* fileName, _In_z_ const char* tabl
                             table[i*nCol + j] = table[(i - 1)*nCol + j];
                         }
                         ModelicaFormatWarning(
-                            "Missing data in line %lu when reading numeric data of matrix "
+                            "Missing data in line %lu when reading weather data of matrix "
                             "\"%s(%lu,%lu)\" from file \"%s\"\n", lineNo,
                             tableName, nRow, nCol, fileName);
                     }
@@ -1252,6 +1281,10 @@ static double* readEpwTable(_In_z_ const char* fileName, _In_z_ const char* tabl
             }
         }
 
+        if (0 == leap) {
+            nRow -= foundFeb29;
+        }
+
         /* Use the data at first recorded time for time equal to 0s */
         memcpy(&table[1], &table[31], 29*sizeof(double));
 
@@ -1283,12 +1316,17 @@ static double* readEpwTable(_In_z_ const char* fileName, _In_z_ const char* tabl
         *n = 0;
         if (readError == 9) {
             ModelicaFormatError(
-                "Error: Missing data in line 9 when reading numeric data of matrix "
+                "Error: Missing data in line 9 when reading weather data of matrix "
+                "\"%s(%lu,%lu)\" from file \"%s\"\n", tableName, nRow, nCol, fileName);
+        }
+        else if (readError == 29) {
+            ModelicaFormatError(
+                "Error: Missing data for 29th of February when reading weather data of matrix "
                 "\"%s(%lu,%lu)\" from file \"%s\"\n", tableName, nRow, nCol, fileName);
         }
         else {
             ModelicaFormatError(
-                "Error in line %lu when reading numeric data of matrix "
+                "Error in line %lu when reading weather data of matrix "
                 "\"%s(%lu,%lu)\" from file \"%s\"\n", lineNo,
                 tableName, nRow, nCol, fileName);
         }
