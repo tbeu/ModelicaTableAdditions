@@ -1,6 +1,6 @@
 /* ModelicaMatIO.h - MAT file I/O functions header
 
-   Copyright (C) 2013-2019, Modelica Association and contributors
+   Copyright (C) 2013-2020, Modelica Association and contributors
    Copyright (C) 2005-2013, Christopher C. Hulbert
    All rights reserved.
 
@@ -54,20 +54,20 @@
 #define MATIO_MINOR_VERSION 5
 
 /* Matio release level number */
-#define MATIO_RELEASE_LEVEL 12
+#define MATIO_RELEASE_LEVEL 17
 
 /* Matio version number */
-#define MATIO_VERSION 1512
+#define MATIO_VERSION 1517
 
 /* Matio version string */
-#define MATIO_VERSION_STR "1.5.12"
+#define MATIO_VERSION_STR "1.5.17"
 
 /* Default file format */
 #define MAT_FT_DEFAULT MAT_FT_MAT5
 
 /* Have MAT int64 / uint64 */
 #if defined(_WIN32)
-#if defined(__WATCOMC__) || defined(__MINGW32__) || defined(__CYGWIN__)
+#if defined(__WATCOMC__) || defined(__MINGW32__) || defined(__CYGWIN__) || defined(__BORLANDC__)
 #define HAVE_MATIO_INT64_T 1
 #define HAVE_MATIO_UINT64_T 1
 #elif defined(_MSC_VER) && _MSC_VER > 1300
@@ -103,6 +103,12 @@
 /* Include integer type header */
 #if defined(HAVE_MATIO_STDINT_H)
 #include <stdint.h>
+#elif defined(_MSC_VER)
+#define HAVE_MATIO_STDINT_H 1
+#include "stdint_msvc.h"
+#endif
+
+#if defined(HAVE_MATIO_STDINT_H)
 typedef int16_t mat_int16_t;
 typedef int32_t mat_int32_t;
 typedef int64_t mat_int64_t;
@@ -115,7 +121,7 @@ typedef uint8_t mat_uint8_t;
 #define mat_int16_t short
 #define mat_int32_t int
 #if defined(HAVE_MATIO_INT64_T)
-#if defined(_MSC_VER) && _MSC_VER < 1300
+#if defined(__BORLANDC__) || (defined(_MSC_VER) && _MSC_VER < 1300)
 #define mat_int64_t __int64
 #else
 #define mat_int64_t long long
@@ -125,13 +131,34 @@ typedef uint8_t mat_uint8_t;
 #define mat_uint16_t unsigned short
 #define mat_uint32_t unsigned
 #if defined(HAVE_MATIO_UINT64_T)
-#if defined(_MSC_VER) && _MSC_VER < 1300
+#if defined(__BORLANDC__) || (defined(_MSC_VER) && _MSC_VER < 1300)
 #define mat_uint64_t unsigned __int64
 #else
 #define mat_uint64_t unsigned long long
 #endif
 #endif
 #define mat_uint8_t unsigned char
+#endif
+
+/*
+  The following macros handle format attributes for type-checks against a
+  format string.
+*/
+
+#if defined(__GNUC__) && __GNUC__ >= 3
+#define MATIO_FORMATATTR_PRINTF1 __attribute__((format(printf, 1, 2)))
+#define MATIO_FORMATATTR_VPRINTF __attribute__((format(printf, 1, 0)))
+#elif defined(__clang__)
+#if __has_attribute(format)
+#define MATIO_FORMATATTR_PRINTF1 __attribute__((format(printf, 1, 2)))
+#define MATIO_FORMATATTR_VPRINTF __attribute__((format(printf, 1, 0)))
+#else
+#define MATIO_FORMATATTR_PRINTF1
+#define MATIO_FORMATATTR_VPRINTF
+#endif
+#else
+#define MATIO_FORMATATTR_PRINTF1
+#define MATIO_FORMATATTR_VPRINTF
 #endif
 
 #endif /* MATIO_PUBCONF_H */
@@ -326,10 +353,10 @@ typedef struct mat_sparse_t {
 MATIO_EXTERN void Mat_GetLibraryVersion(int *major,int *minor,int *release);
 
 /* io.c */
-MATIO_EXTERN char  *strdup_vprintf(const char *format, va_list ap);
-MATIO_EXTERN char  *strdup_printf(const char *format, ...);
-MATIO_EXTERN void   Mat_Critical( const char *format, ... );
-MATIO_EXTERN void   Mat_Warning( const char *format, ... );
+MATIO_EXTERN char  *strdup_vprintf(const char *format, va_list ap) MATIO_FORMATATTR_VPRINTF;
+MATIO_EXTERN char  *strdup_printf(const char *format, ...) MATIO_FORMATATTR_PRINTF1;
+MATIO_EXTERN void   Mat_Critical(const char *format, ...) MATIO_FORMATATTR_PRINTF1;
+MATIO_EXTERN void   Mat_Warning(const char *format, ...) MATIO_FORMATATTR_PRINTF1;
 MATIO_EXTERN size_t Mat_SizeOf(enum matio_types data_type);
 MATIO_EXTERN size_t Mat_SizeOfClass(int class_type);
 
@@ -340,6 +367,7 @@ MATIO_EXTERN mat_t      *Mat_CreateVer(const char *matname,const char *hdr_str,
 MATIO_EXTERN int         Mat_Close(mat_t *mat);
 MATIO_EXTERN mat_t      *Mat_Open(const char *matname,int mode);
 MATIO_EXTERN const char *Mat_GetFilename(mat_t *mat);
+MATIO_EXTERN const char *Mat_GetHeader(mat_t *mat);
 MATIO_EXTERN enum mat_ft Mat_GetVersion(mat_t *mat);
 MATIO_EXTERN char      **Mat_GetDir(mat_t *mat, size_t *n);
 MATIO_EXTERN int         Mat_Rewind(mat_t *mat);
