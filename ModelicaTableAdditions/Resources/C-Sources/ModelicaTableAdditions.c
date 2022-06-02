@@ -39,6 +39,11 @@
       ModelicaTableAdditions.Blocks.Tables.CombiTable2Dv
 
    Changelog:
+      May 03, 2022:  by Hans Olsson, Dassault Systemes
+                     Fixed index-out-of-bounds exception in spline
+                     initialization of 2D tables that actually degrade
+                     to 1D tables (ticket #3983)
+
       Nov. 12, 2021: by Thomas Beutlich
                      Fixed derivatives in CombiTable2D for one-sided extrapolation
                      by constant continuation (ticket #3894)
@@ -6893,7 +6898,7 @@ static CubicHermite2D* spline2DInit(_In_ const double* table, size_t nRow,
             return NULL;
         }
 
-        spline = (CubicHermite2D*)malloc((nCol - 1)*sizeof(CubicHermite2D));
+        spline = (CubicHermite2D*)malloc((nCol - 2)*sizeof(CubicHermite2D));
         if (NULL == spline) {
             free(tableT);
             return NULL;
@@ -6911,7 +6916,7 @@ static CubicHermite2D* spline2DInit(_In_ const double* table, size_t nRow,
             return NULL;
         }
         /* Copy coefficients */
-        for (j = 0; j < nCol - 1; j++) {
+        for (j = 0; j < nCol - 2; j++) {
             const double* c1 = spline1D[j];
             double* c2 = spline[j];
             c2[0] = c1[0];
@@ -6925,7 +6930,7 @@ static CubicHermite2D* spline2DInit(_In_ const double* table, size_t nRow,
         size_t i;
         int cols = 2;
 
-        spline = (CubicHermite2D*)malloc((nRow - 1)*sizeof(CubicHermite2D));
+        spline = (CubicHermite2D*)malloc((nRow - 2)*sizeof(CubicHermite2D));
         if (NULL == spline) {
             return NULL;
         }
@@ -6936,7 +6941,7 @@ static CubicHermite2D* spline2DInit(_In_ const double* table, size_t nRow,
             return NULL;
         }
         /* Copy coefficients */
-        for (i = 0; i < nRow - 1; i++) {
+        for (i = 0; i < nRow - 2; i++) {
             const double* c1 = spline1D[i];
             double* c2 = spline[i];
             c2[0] = c1[0];
