@@ -362,7 +362,7 @@ MATLAB is a registered trademark of The MathWorks, Inc.
         fillPattern=FillPattern.Solid,
         extent={{-48,-50},{2,70}}),
       Line(points={{-48,-50},{-48,70},{52,70},{52,-50},{-48,-50},{-48,-20},{52,-20},{52,10},{-48,10},{-48,40},{52,40},{52,70},{2,70},{2,-51}}),
-      Text(lineColor={0,0,255},extent={{-85,110},{85,65}},textString=DynamicSelect("csv", if isCsvExt then if delimiter == " " then "c s v" elseif delimiter == "," then "c,s,v" elseif delimiter == "\t" then "c\\ts\\tv" elseif delimiter == ";" then "c;s;v" else "csv" elseif isEpwExt then "epw" else "")),
+      Text(textColor={0,0,255},extent={{-85,110},{85,65}},textString=DynamicSelect("csv", if isCsvExt then if delimiter == " " then "c s v" elseif delimiter == "," then "c,s,v" elseif delimiter == "\t" then "c\\ts\\tv" elseif delimiter == ";" then "c;s;v" else "csv" elseif isEpwExt then "epw" else "")),
       Text(extent={{-150,-150},{150,-110}}, textString="tableOnFile=%tableOnFile")}));
   end CombiTimeTable;
 end Sources;

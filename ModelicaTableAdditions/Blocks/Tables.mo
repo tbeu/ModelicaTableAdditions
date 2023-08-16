@@ -262,7 +262,7 @@ MATLAB is a registered trademark of The MathWorks, Inc.
       Rectangle(fillColor={255,215,136},
         fillPattern=FillPattern.Solid,
         extent={{-60,-40},{-30,-20}}),
-      Text(lineColor={0,0,255},extent={{-85,110},{85,65}},textString=DynamicSelect("csv", if isCsvExt then if delimiter == " " then "c s v" elseif delimiter == "," then "c,s,v" elseif delimiter == "\t" then "c\\ts\\tv" elseif delimiter == ";" then "c;s;v" else "csv" elseif isEpwExt then "epw" else "")),
+      Text(textColor={0,0,255},extent={{-85,110},{85,65}},textString=DynamicSelect("csv", if isCsvExt then if delimiter == " " then "c s v" elseif delimiter == "," then "c,s,v" elseif delimiter == "\t" then "c\\ts\\tv" elseif delimiter == ";" then "c;s;v" else "csv" elseif isEpwExt then "epw" else "")),
       Text(extent={{-150,-150},{150,-110}}, textString="tableOnFile=%tableOnFile")}));
   end CombiTable1Ds;
 
@@ -528,7 +528,7 @@ MATLAB is a registered trademark of The MathWorks, Inc.
       Rectangle(fillColor={255,215,136},
         fillPattern=FillPattern.Solid,
         extent={{-60,-40},{-30,-20}}),
-      Text(lineColor={0,0,255},extent={{-85,110},{85,65}},textString=DynamicSelect("csv", if isCsvExt then if delimiter == " " then "c s v" elseif delimiter == "," then "c,s,v" elseif delimiter == "\t" then "c\\ts\\tv" elseif delimiter == ";" then "c;s;v" else "csv" elseif isEpwExt then "epw" else "")),
+      Text(textColor={0,0,255},extent={{-85,110},{85,65}},textString=DynamicSelect("csv", if isCsvExt then if delimiter == " " then "c s v" elseif delimiter == "," then "c,s,v" elseif delimiter == "\t" then "c\\ts\\tv" elseif delimiter == ";" then "c;s;v" else "csv" elseif isEpwExt then "epw" else "")),
       Text(extent={{-150,-150},{150,-110}}, textString="tableOnFile=%tableOnFile")}));
   end CombiTable1Dv;
 
@@ -1004,7 +1004,7 @@ MATLAB is a registered trademark of The MathWorks, Inc.
         fillColor={255,215,136},
         fillPattern=FillPattern.Solid,
         extent={{32.3077,20},{62.3077,40}}),
-      Text(lineColor={0,0,255},extent={{-85,110},{85,65}},textString=DynamicSelect("csv", if isCsvExt then if delimiter == " " then "c s v" elseif delimiter == "," then "c,s,v" elseif delimiter == "\t" then "c\\ts\\tv" elseif delimiter == ";" then "c;s;v" else "csv" else "")),
+      Text(textColor={0,0,255},extent={{-85,110},{85,65}},textString=DynamicSelect("csv", if isCsvExt then if delimiter == " " then "c s v" elseif delimiter == "," then "c,s,v" elseif delimiter == "\t" then "c\\ts\\tv" elseif delimiter == ";" then "c;s;v" else "csv" else "")),
       Text(extent={{-150,-150},{150,-110}}, textString="tableOnFile=%tableOnFile")}));
     end CombiTable2DBase;
 
