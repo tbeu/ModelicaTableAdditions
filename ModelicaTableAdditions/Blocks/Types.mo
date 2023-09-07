@@ -12,11 +12,11 @@ package Types
       input String tableName "Table name";
       input String fileName "File name";
       input Real table[:, :];
-      input Modelica.Units.SI.Time startTime;
+      input Real startTime;
       input Integer columns[:];
       input Modelica.Blocks.Types.Smoothness smoothness;
       input Modelica.Blocks.Types.Extrapolation extrapolation;
-      input Modelica.Units.SI.Time shiftTime=0.0;
+      input Real shiftTime=0.0;
       input Modelica.Blocks.Types.TimeEvents timeEvents=Modelica.Blocks.Types.TimeEvents.Always;
       input Boolean verboseRead=true "= true: Print info message; = false: No info message";
       input String delimiter="," "Column delimiter character for CSV file";
