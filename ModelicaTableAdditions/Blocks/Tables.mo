@@ -1128,6 +1128,17 @@ MATLAB is a registered trademark of The MathWorks, Inc.
         annotation (IncludeDirectory="modelica://ModelicaTableAdditions/Resources/C-Sources", Include="#include \"ModelicaTableAdditions.h\"", Library={"ModelicaTableAdditions", "ModelicaIOAdditions", "ModelicaMatIO", "zlib", "parson"});
     end getNextTimeEvent;
 
+    impure function readTimeTableData
+      "Read table data"
+      extends Modelica.Icons.Function;
+      input ModelicaTableAdditions.Blocks.Types.ExternalCombiTimeTable tableID "External table object";
+      input Boolean forceRead = false "= true: Force reading of table data; = false: Only read, if not yet read.";
+      input Boolean verboseRead = true "= true: Print info message; = false: No info message";
+      output Real readSuccess "Table read success";
+      external "C" readSuccess = ModelicaTableAdditions_CombiTimeTable_read(tableID, forceRead, verboseRead)
+        annotation (IncludeDirectory="modelica://ModelicaTableAdditions/Resources/C-Sources", Include="#include \"ModelicaTableAdditions.h\"", Library={"ModelicaTableAdditions", "ModelicaIOAdditions", "ModelicaMatIO", "zlib", "parson"});
+    end readTimeTableData;
+
     pure function getTable1DValue "Interpolate 1-dim. table defined by matrix"
       extends Modelica.Icons.Function;
       input ModelicaTableAdditions.Blocks.Types.ExternalCombiTable1D tableID "External table object";

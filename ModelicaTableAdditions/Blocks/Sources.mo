@@ -365,4 +365,219 @@ MATLAB is a registered trademark of The MathWorks, Inc.
       Text(textColor={0,0,255},extent={{-85,110},{85,65}},textString=DynamicSelect("csv", if isCsvExt then if delimiter == " " then "c s v" elseif delimiter == "," then "c,s,v" elseif delimiter == "\t" then "c\\ts\\tv" elseif delimiter == ";" then "c;s;v" else "csv" elseif isEpwExt then "epw" else "")),
       Text(extent={{-150,-150},{150,-110}}, textString="tableOnFile=%tableOnFile")}));
   end CombiTimeTable;
+
+  block FileUpdateTimeTable
+    "Table look-up with respect to time and various interpolation and extrapolation methods (data from file)"
+    import ModelicaTableAdditions.Blocks.Tables.Internal;
+    extends CombiTimeTable(
+      final tableOnFile=true,
+      final table=fill(0.0, 0, 2));
+    parameter Boolean forceRead = false "= true: Force reading of table data; = false: Only read, if not yet read."
+      annotation (Dialog(group="Table data definition"));
+    Modelica.Blocks.Interfaces.BooleanInput updateTrigger "Connector of Boolean input signal for reading table data from file"
+      annotation (Placement(transformation(extent={{-20,-20},{20,20}}, rotation=-90, origin={0,120})));
+    Real readSuccess "Table read success";
+  equation
+    when updateTrigger then
+      readSuccess = Internal.readTimeTableData(tableID, forceRead, verboseRead);
+    end when;
+    annotation (
+      Documentation(info="<html>
+<p>
+This block generates an output signal y[:] by <strong>constant</strong>,
+<strong>linear</strong> or <strong>cubic Hermite spline interpolation</strong>
+in a table. The time points and function values are stored in a matrix
+<strong>table[i,j]</strong>, where the first column table[:,1] contains the
+time points and the other columns contain the data to be interpolated.
+</p>
+
+<div>
+<img src=\"modelica://Modelica/Resources/Images/Blocks/Sources/CombiTimeTable.png\"
+     alt=\"CombiTimeTable.png\">
+</div>
+
+<p>
+Via parameter <strong>columns</strong> it can be defined which columns of the
+table are interpolated. If, e.g., columns={2,4}, it is assumed that
+2 output signals are present and that the first output is computed
+by interpolation of column 2 and the second output is computed
+by interpolation of column 4 of the table matrix.
+The table interpolation has the following properties:
+</p>
+<ul>
+<li>The interpolation interval is found by a binary search where the interval used in the
+    last call is used as start interval.</li>
+<li>The time points need to be <strong>strictly increasing</strong> for cubic Hermite
+    spline interpolation, otherwise <strong>monotonically increasing</strong>.</li>
+<li><strong>Discontinuities</strong> are allowed for (constant or) linear interpolation,
+    by providing the same time point twice in the table.</li>
+<li>Via parameter <strong>smoothness</strong> it is defined how the data is interpolated:
+<blockquote><pre>
+smoothness = 1: Linear interpolation
+           = 2: Akima interpolation: Smooth interpolation by cubic Hermite
+                splines such that der(y) is continuous, also if extrapolated.
+           = 3: Constant segments
+           = 4: Fritsch-Butland interpolation: Smooth interpolation by cubic
+                Hermite splines such that y preserves the monotonicity and
+                der(y) is continuous, also if extrapolated.
+           = 5: Steffen interpolation: Smooth interpolation by cubic Hermite
+                splines such that y preserves the monotonicity and der(y)
+                is continuous, also if extrapolated.
+           = 6: Modified Akima interpolation: Smooth interpolation by cubic
+                Hermite splines such that der(y) is continuous, also if
+                extrapolated. Additionally, overshoots and edge cases of the
+                original Akima interpolation method are avoided.
+</pre></blockquote></li>
+<li>First and second <strong>derivatives</strong> are provided, with exception of the following two smoothness options.
+<ol>
+<li>No derivatives are provided for interpolation by constant segments.</li>
+<li>No second derivative is provided for linear interpolation.<br>There is a design inconsistency, that it is possible
+to model a signal consisting of constant segments using linear interpolation and duplicated sample points.
+In contrast to interpolation by constant segments, the first derivative is provided as zero.</li>
+</ol></li>
+<li>Values <strong>outside</strong> of the table range, are computed by
+    extrapolation according to the setting of parameter <strong>extrapolation</strong>:
+<blockquote><pre>
+extrapolation = 1: Hold the first or last value of the table,
+                   if outside of the table scope.
+              = 2: Extrapolate by using the derivative at the first/last table
+                   points if outside of the table scope.
+                   (If smoothness is LinearSegments or ConstantSegments
+                   this means to extrapolate linearly through the first/last
+                   two table points.).
+              = 3: Periodically repeat the table data (periodical function).
+              = 4: No extrapolation, i.e. extrapolation triggers an error
+</pre></blockquote></li>
+<li>If the table has only <strong>one row</strong>, no interpolation is performed and
+    the table values of this row are just returned.</li>
+<li>Via parameters <strong>shiftTime</strong> and <strong>offset</strong> the curve defined
+    by the table can be shifted both in time and in the ordinate value.
+    The time instants stored in the table are therefore <strong>relative</strong>
+    to <strong>shiftTime</strong>.</li>
+<li>If time &lt; startTime, no interpolation is performed and the offset
+    is used as ordinate value for all outputs.</li>
+<li>The table is implemented in a numerically sound way by
+    generating <strong>time events</strong> at interval boundaries, in case of
+    interpolation by linear segments.
+    This generates continuously differentiable values for the integrator.
+    Via parameter <strong>timeEvents</strong> it is defined how the time events are generated:
+<blockquote><pre>
+timeEvents = 1: Always generate time events at interval boundaries
+           = 2: Generate time events at discontinuities (defined by duplicated sample points)
+           = 3: No time events at interval boundaries
+</pre></blockquote>
+    For interpolation by constant segments time events are always generated at interval boundaries.
+    For smooth interpolation by cubic Hermite splines no time events are generated at interval boundaries.</li>
+<li>Via parameter <strong>timeScale</strong> the first column of the table array can
+    be scaled, e.g., if the table array is given in hours (instead of seconds)
+    <strong>timeScale</strong> shall be set to 3600.</li>
+<li>For special applications it is sometimes needed to know the minimum
+    and maximum time instant defined in the table as a parameter. For this
+    reason parameters <strong>t_min</strong>/<strong>t_minScaled</strong> and
+    <strong>t_max</strong>/<strong>t_maxScaled</strong> are provided and can be
+    accessed from the outside of the table object. Whereas <strong>t_min</strong> and
+    <strong>t_max</strong> define the scaled abscissa values (using parameter
+    <strong>timeScale</strong>) in SI.Time, <strong>t_minScaled</strong> and
+    <strong>t_maxScaled</strong> define the unitless original abscissa values of
+    the table.</li>
+</ul>
+<p>
+Example:
+</p>
+<blockquote><pre>
+table = [0, 0;
+         1, 0;
+         1, 1;
+         2, 4;
+         3, 9;
+         4, 16];
+extrapolation = 2 (default), timeEvents = 2
+If, e.g., time = 1.0, the output y =  0.0 (before event), 1.0 (after event)
+    e.g., time = 1.5, the output y =  2.5,
+    e.g., time = 2.0, the output y =  4.0,
+    e.g., time = 5.0, the output y = 23.0 (i.e., extrapolation via last 2 points).
+</pre></blockquote>
+<p>
+The table matrix can be defined in the following ways:
+</p>
+<ol>
+<li><strong>Read</strong> from a <strong>file</strong> \"fileName\" where the matrix is stored as
+    \"tableName\". CSV, EPW, JSON, text and MATLAB MAT-file format is possible.
+    (The text format is described below).
+    The MAT-file format comes in four different versions: v4, v6, v7 and v7.3.
+    The library supports at least v4, v6 and v7 whereas v7.3 is optional.
+    It is most convenient to generate the MAT-file from FreeMat or MATLAB&reg;
+    by command
+<blockquote><pre>
+save tables.mat tab1 tab2 tab3
+</pre></blockquote>
+    or Scilab by command
+<blockquote><pre>
+savematfile tables.mat tab1 tab2 tab3
+</pre></blockquote>
+    when the three tables tab1, tab2, tab3 should be used from the model.<br>
+    Note, a fileName can be defined as URI by using the helper function
+    <a href=\"modelica://Modelica.Utilities.Files.loadResource\">loadResource</a>.</li>
+</ol>
+<p>
+When the constant \"NO_FILE_SYSTEM\" is defined, all file I/O related parts of the
+source code are removed by the C-preprocessor, such that no access to files takes place.
+</p>
+<p>
+If tables are read from a text file, the file needs to have the
+following structure (\"-----\" is not part of the file content):
+</p>
+<blockquote><pre>
+-----------------------------------------------------
+#1
+double tab1(6,2)   # comment line
+  0   0
+  1   0
+  1   1
+  2   4
+  3   9
+  4  16
+double tab2(6,2)   # another comment line
+  0   0
+  2   0
+  2   2
+  4   8
+  6  18
+  8  32
+-----------------------------------------------------
+</pre></blockquote>
+<p>
+Note, that the first two characters in the file need to be
+\"#1\" (a line comment defining the version number of the file format).
+Afterwards, the corresponding matrix has to be declared
+with type (= \"double\" or \"float\"), name and actual dimensions.
+A valid matrix name (e.g., \"tab1\") must be ASCII encoded and not contain blanks, line breaks, tab (\\t), comma (,) or parentheses.
+Finally, in successive rows of the file, the elements of the matrix
+have to be given. The elements have to be provided as a sequence of
+numbers in row-wise order (therefore a matrix row can span several
+lines in the file and need not start at the beginning of a line).
+Numbers have to be given according to C syntax (such as 2.3, -2, +2.e4).
+Number separators are spaces, tab (\\t), comma (,), or semicolon (;).
+Several matrices may be defined one after another. Line comments start
+with the hash symbol (#) and can appear everywhere.
+Text files should either be ASCII or UTF-8 encoded, where UTF-8 encoded strings are only allowed in line comments and an optional UTF-8 BOM at the start of the text file is ignored.
+Other characters, like trailing non comments, are not allowed in the file.
+</p>
+<p>
+MATLAB is a registered trademark of The MathWorks, Inc.
+</p>
+</html>", revisions="<html>
+<p><strong>Release Notes:</strong></p>
+<ul>
+<li><em>April 09, 2013</em>
+       by Thomas Beutlich:<br>
+       Implemented as external object.</li>
+<li><em>March 31, 2001</em>
+       by <a href=\"http://www.robotic.dlr.de/Martin.Otter/\">Martin Otter</a>:<br>
+       Used CombiTableTime as a basis and added the
+       arguments <strong>extrapolation, columns, startTime</strong>.
+       This allows periodic function definitions.</li>
+</ul>
+</html>"));
+  end FileUpdateTimeTable;
 end Sources;
