@@ -86,4 +86,21 @@ package Test "Test models"
           coordinateSystem(preserveAspectRatio=false, extent={{-100,-40},{160,100}})),
       experiment(StopTime=45));
   end TestTables;
+
+  model TestFileUpdateTimeTable "Update table source file on events"
+    extends Modelica.Icons.Example;
+    ModelicaTableAdditions.Blocks.Sources.FileUpdateTimeTable fileUpdateTimeTable(
+      tableName="tab1",
+      fileName=Modelica.Utilities.Files.loadResource("modelica://ModelicaTableAdditions/Resources/Data/Tables/test.txt"),
+      forceRead=true)
+      annotation(Placement(transformation(extent={{-60,20},{-40,40}})));
+    Modelica.Blocks.Sources.BooleanExpression booleanExpression(y=sample(0, 10))
+      annotation(Placement(transformation(extent={{-78,52},{-58,72}})));
+  equation
+    connect(fileUpdateTimeTable.updateTrigger, booleanExpression.y)
+      annotation(Line(points={{-50,42},{-50,62},{-57,62}}, color={255,0,255}));
+    annotation (Icon(coordinateSystem(preserveAspectRatio=false, extent={{-100,-100},{100,100}})), Diagram(
+          coordinateSystem(preserveAspectRatio=false, extent={{-100,0},{0,100}})),
+      experiment(StopTime=45));
+  end TestFileUpdateTimeTable;
 end Test;
