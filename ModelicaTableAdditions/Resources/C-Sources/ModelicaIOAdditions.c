@@ -117,7 +117,7 @@ int ModelicaIOAdditions_writeRealMatrix(_In_z_ const char* fileName,
     ModelicaNotExistError("ModelicaIOAdditions_writeRealMatrix"); return 0; }
 double* ModelicaIOAdditions_readRealTable(_In_z_ const char* fileName,
     _In_z_ const char* matrixName, _Out_ size_t* m, _Out_ size_t* n,
-    int verbose) {
+    int verbose, _In_z_ const char* delimiter, int nHeaderLines) {
     ModelicaNotExistError("ModelicaIOAdditions_readRealTable"); return NULL; }
 #else
 
