@@ -2,6 +2,10 @@
 
 Free Modelica library for univariate and bivariate interpolation and extrapolation in lookup-tables.
 
+## Status
+
+[![GitHub license](https://img.shields.io/github/license/tbeu/ModelicaTableAdditions)](https://github.com/tbeu/ModelicaTableAdditions/blob/main/LICENSE)
+
 ## Library description
 
 ModelicaTableAdditions is an extension of the CombiTable blocks of the [Modelica Standard Library](https://github.com/modelica/ModelicaStandardLibrary) to support reading CSV, EPW (EnergyPlus Weather) and JSON files.
