@@ -1,0 +1,134 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  build:
+    name: build_cmake_${{ matrix.toolchain }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 5
+    strategy:
+      fail-fast: false
+      matrix:
+        toolchain:
+          - linux-gcc
+          - macos-clang
+          - windows-msvc
+          - windows-mingw
+        configuration:
+          - Debug
+        include:
+          - toolchain: linux-gcc
+            os: ubuntu-latest
+            compiler: gcc
+          - toolchain: macos-clang
+            os: macos-latest
+            compiler: clang
+          - toolchain: windows-msvc
+            os: windows-latest
+            compiler: msvc
+          - toolchain: windows-mingw
+            os: windows-latest
+            compiler: mingw
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 5
+      - name: Configure
+        run: |
+          if [ "${{ matrix.compiler }}" == "msvc" ]; then
+            cmake -S "$SRCDIR" -B build -DMODELICA_UTILITIES_INCLUDE_DIR="$TESTDIR" -DMODELICA_DEBUG_TIME_EVENTS=ON
+          elif [ "${{ matrix.compiler }}" == "mingw" ]; then
+            cmake -S "$SRCDIR" -B build -DMODELICA_UTILITIES_INCLUDE_DIR="$TESTDIR" -DMODELICA_DEBUG_TIME_EVENTS=ON -DCMAKE_BUILD_TYPE=${{ matrix.configuration }} -G "MinGW Makefiles"
+          else
+            cmake -S "$SRCDIR" -B build -DMODELICA_UTILITIES_INCLUDE_DIR="$TESTDIR" -DMODELICA_DEBUG_TIME_EVENTS=ON -DCMAKE_BUILD_TYPE=${{ matrix.configuration }} -DCMAKE_C_FLAGS="-std=c89 -Wall -Wextra"
+          fi
+        env:
+          SRCDIR: ${{ github.workspace }}/ModelicaTableAdditions/Resources/BuildProjects/CMake
+          TESTDIR: ${{ github.workspace }}/.CI/Test
+      - name: Build with ${{ matrix.compiler }}
+        run: |
+          if [ "${{ matrix.compiler }}" == "msvc" ]; then
+            cmake --build build --config ${{ matrix.configuration }}
+          else
+            cmake --build build -- -j8
+          fi
+
+  html_documentation_checks:
+    timeout-minutes: 5
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 5
+      - name: Setup python environment
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.8
+      - name: Install python packages
+        run: |
+          pip install --disable-pip-version-check --user pytidylib
+          pip install --disable-pip-version-check --user futures
+      - name: Build html tidy
+        run: |
+          git clone --branch 5.8.0 --depth=1 https://github.com/htacg/tidy-html5.git
+          pushd tidy-html5
+          cmake .
+          make
+          sudo make install
+          popd
+          sudo ldconfig
+      - name: Tidy html
+        run: |
+          echo "::add-matcher::./.github/tidyHTML.json"
+          python ./.CI/check_html.py tidyHTML ./
+          echo "::remove-matcher owner=tidyHTML::"
+      - name: Check tags
+        run: |
+          echo "::add-matcher::./.github/checkTags.json"
+          python ./.CI/check_html.py checkTags ./
+          echo "::remove-matcher owner=checkTags::"
+
+  syntax_checks:
+    timeout-minutes: 5
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 5
+      - name: Get moparser
+        run: git clone --depth=1 https://github.com/modelica-tools/ModelicaSyntaxChecker
+      - name: Check file encoding
+        run: "! find . -name '*.mo' -exec bash -c 'iconv -o /dev/null -f utf8 -t utf8 \"{}\" |& sed \"s,^,{}: ,\"' ';' | grep '.'"
+      - name: Check for UTF-8 BOM
+        run: "! find . -name '*.mo' -print0 | xargs -0 grep -l $'^\\xEF\\xBB\\xBF' | grep ."
+      - name: Check syntax
+        run: |
+          echo "::add-matcher::./.github/moparser.json"
+          ModelicaSyntaxChecker/Linux64/moparser -v 3.4 -r ModelicaTableAdditions
+          echo "::remove-matcher owner=moparser::"
+
+  deprecation_checks:
+    timeout-minutes: 5
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 5
+      - name: Setup python environment
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.8
+      - name: Check deprecated Text.lineColor annotation
+        run: |
+          echo "::add-matcher::./.github/check_deprecated_line_color.json"
+          python ./.CI/check_deprecated_line_color.py ./
+          echo "::remove-matcher owner=check_deprecated_line_color::"

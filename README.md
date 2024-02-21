@@ -4,7 +4,7 @@ Free Modelica library for univariate and bivariate interpolation and extrapolati
 
 ## Status
 
-[![GitHub license](https://img.shields.io/github/license/tbeu/ModelicaTableAdditions)](https://github.com/tbeu/ModelicaTableAdditions/blob/main/LICENSE)
+[![CI checks](https://github.com/tbeu/ModelicaTableAdditions/actions/workflows/checkCI.yml/badge.svg)](https://github.com/tbeu/ModelicaTableAdditions/actions/workflows/checkCI.yml) [![GitHub license](https://img.shields.io/github/license/tbeu/ModelicaTableAdditions)](https://github.com/tbeu/ModelicaTableAdditions/blob/main/LICENSE)
 
 ## Library description
 
