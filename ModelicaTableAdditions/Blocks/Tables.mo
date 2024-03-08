@@ -23,10 +23,10 @@ package Tables
     parameter String delimiter="," "Column delimiter character for CSV file"
       annotation (Dialog(
         group="Table data definition",
-        enable=tableOnFile),
+        enable=tableOnFile and isCsvExt),
         choices(choice=" " "Blank", choice="," "Comma", choice="\t" "Horizontal tabulator", choice=";" "Semicolon"));
     parameter Integer nHeaderLines=0 "Number of header lines to ignore for CSV file"
-      annotation (Dialog(group="Table data definition",enable=tableOnFile));
+      annotation (Dialog(group="Table data definition",enable=tableOnFile and isCsvExt));
     parameter Boolean verboseRead=true
       "= true, if info message that file is loading is to be printed"
       annotation (Dialog(group="Table data definition",enable=tableOnFile));
@@ -176,7 +176,7 @@ fileName  is \"NoName\" or has only blanks.
 </pre></blockquote></li>
 <li><strong>Read</strong> from a <strong>file</strong> \"fileName\" where the matrix is stored as
     \"tableName\". CSV, EPW, JSON, text and MATLAB MAT-file format is possible.
-    (The text format is described below).
+    (Both the limitations on the CSV format and the text format are described below).
     The MAT-file format comes in four different versions: v4, v6, v7 and v7.3.
     The library supports at least v4, v6 and v7 whereas v7.3 is optional.
     It is most convenient to generate the MAT-file from FreeMat or MATLAB&reg;
@@ -202,6 +202,13 @@ savematfile tables.mat tab1 tab2 tab3
 When the constant \"NO_FILE_SYSTEM\" is defined, all file I/O related parts of the
 source code are removed by the C-preprocessor, such that no access to files takes place.
 </p>
+<p>
+If the table is read from a CSV file, the following limitations apply
+</p>
+<ol>
+<li>Non-numeric data is not supported (in the lines following the header lines), even if such columns are excluded.</li>
+<li>Double-quoted data entries in the first header line shall not contain the column delimiter.</li>
+</ol>
 <p>
 If tables are read from a text file, the file needs to have the
 following structure (\"-----\" is not part of the file content):
@@ -287,10 +294,10 @@ MATLAB is a registered trademark of The MathWorks, Inc.
     parameter String delimiter="," "Column delimiter character for CSV file"
       annotation (Dialog(
         group="Table data definition",
-        enable=tableOnFile),
+        enable=tableOnFile and isCsvExt),
         choices(choice=" " "Blank", choice="," "Comma", choice="\t" "Horizontal tabulator", choice=";" "Semicolon"));
     parameter Integer nHeaderLines=0 "Number of header lines to ignore for CSV file"
-      annotation (Dialog(group="Table data definition",enable=tableOnFile));
+      annotation (Dialog(group="Table data definition",enable=tableOnFile and isCsvExt));
     parameter Boolean verboseRead=true
       "= true, if info message that file is loading is to be printed"
       annotation (Dialog(group="Table data definition",enable=tableOnFile));
@@ -442,7 +449,7 @@ fileName  is \"NoName\" or has only blanks.
 </pre></blockquote></li>
 <li><strong>Read</strong> from a <strong>file</strong> \"fileName\" where the matrix is stored as
     \"tableName\". CSV, EPW, JSON, text and MATLAB MAT-file format is possible.
-    (The text format is described below).
+    (Both the limitations on the CSV format and the text format are described below).
     The MAT-file format comes in four different versions: v4, v6, v7 and v7.3.
     The library supports at least v4, v6 and v7 whereas v7.3 is optional.
     It is most convenient to generate the MAT-file from FreeMat or MATLAB&reg;
@@ -468,6 +475,13 @@ savematfile tables.mat tab1 tab2 tab3
 When the constant \"NO_FILE_SYSTEM\" is defined, all file I/O related parts of the
 source code are removed by the C-preprocessor, such that no access to files takes place.
 </p>
+<p>
+If the table is read from a CSV file, the following limitations apply
+</p>
+<ol>
+<li>Non-numeric data is not supported (in the lines following the header lines), even if such columns are excluded.</li>
+<li>Double-quoted data entries in the first header line shall not contain the column delimiter.</li>
+</ol>
 <p>
 If tables are read from a text file, the file needs to have the
 following structure (\"-----\" is not part of the file content):
@@ -644,7 +658,7 @@ fileName  is \"NoName\" or has only blanks.
 </pre></blockquote></li>
 <li><strong>Read</strong> from a <strong>file</strong> \"fileName\" where the matrix is stored as
     \"tableName\". CSV, JSON, text and MATLAB MAT-file format is possible.
-    (The text format is described below).
+    (Both the limitations on the CSV format and the text format are described below).
     The MAT-file format comes in four different versions: v4, v6, v7 and v7.3.
     The library supports at least v4, v6 and v7 whereas v7.3 is optional.
     It is most convenient to generate the MAT-file from FreeMat or MATLAB&reg;
@@ -670,6 +684,13 @@ savematfile tables.mat tab1 tab2 tab3
 When the constant \"NO_FILE_SYSTEM\" is defined, all file I/O related parts of the
 source code are removed by the C-preprocessor, such that no access to files takes place.
 </p>
+<p>
+If the table is read from a CSV file, the following limitations apply
+</p>
+<ol>
+<li>Non-numeric data is not supported (in the lines following the header lines).</li>
+<li>Double-quoted data entries in the first header line shall not contain the column delimiter.</li>
+</ol>
 <p>
 If tables are read from a text file, the file needs to have the
 following structure (\"-----\" is not part of the file content):
@@ -835,7 +856,7 @@ fileName  is \"NoName\" or has only blanks.
 </pre></blockquote></li>
 <li><strong>Read</strong> from a <strong>file</strong> \"fileName\" where the matrix is stored as
     \"tableName\". CSV, JSON, text and MATLAB MAT-file format is possible.
-    (The text format is described below).
+    (Both the limitations on the CSV format and the text format are described below).
     The MAT-file format comes in four different versions: v4, v6, v7 and v7.3.
     The library supports at least v4, v6 and v7 whereas v7.3 is optional.
     It is most convenient to generate the MAT-file from FreeMat or MATLAB&reg;
@@ -861,6 +882,13 @@ savematfile tables.mat tab1 tab2 tab3
 When the constant \"NO_FILE_SYSTEM\" is defined, all file I/O related parts of the
 source code are removed by the C-preprocessor, such that no access to files takes place.
 </p>
+<p>
+If the table is read from a CSV file, the following limitations apply
+</p>
+<ol>
+<li>Non-numeric data is not supported (in the lines following the header lines).</li>
+<li>Double-quoted data entries in the first header line shall not contain the column delimiter.</li>
+</ol>
 <p>
 If tables are read from a text file, the file needs to have the
 following structure (\"-----\" is not part of the file content):
@@ -928,10 +956,10 @@ MATLAB is a registered trademark of The MathWorks, Inc.
       parameter String delimiter="," "Column delimiter character for CSV file"
         annotation (Dialog(
           group="Table data definition",
-          enable=tableOnFile),
+          enable=tableOnFile and isCsvExt),
           choices(choice=" " "Blank", choice="," "Comma", choice="\t" "Horizontal tabulator", choice=";" "Semicolon"));
       parameter Integer nHeaderLines=0 "Number of header lines to ignore for CSV file"
-        annotation (Dialog(group="Table data definition",enable=tableOnFile));
+        annotation (Dialog(group="Table data definition",enable=tableOnFile and isCsvExt));
       parameter Boolean verboseRead=true
         "= true, if info message that file is loading is to be printed"
         annotation (Dialog(group="Table data definition",enable=tableOnFile));
@@ -1014,8 +1042,8 @@ MATLAB is a registered trademark of The MathWorks, Inc.
       input ModelicaTableAdditions.Blocks.Types.ExternalCombiTimeTable tableID "External table object";
       input Integer icol "Column number";
       input Real timeIn "(Scaled) time value";
-      discrete input Real nextTimeEvent "(Scaled) next time event in table";
-      discrete input Real pre_nextTimeEvent "Pre-value of (scaled) next time event in table";
+      input Real nextTimeEvent "(Scaled) next time event in table";
+      input Real pre_nextTimeEvent "Pre-value of (scaled) next time event in table";
       output Real y "Interpolated value";
       external "C" y = ModelicaTableAdditions_CombiTimeTable_getValue(tableID, icol, timeIn, nextTimeEvent, pre_nextTimeEvent)
         annotation (IncludeDirectory="modelica://ModelicaTableAdditions/Resources/C-Sources", Include="#include \"ModelicaTableAdditions.h\"", Library={"ModelicaTableAdditions", "ModelicaIOAdditions", "ModelicaMatIO", "zlib", "parson"});
@@ -1030,8 +1058,8 @@ MATLAB is a registered trademark of The MathWorks, Inc.
       input ModelicaTableAdditions.Blocks.Types.ExternalCombiTimeTable tableID "External table object";
       input Integer icol "Column number";
       input Real timeIn "(Scaled) time value";
-      discrete input Real nextTimeEvent "(Scaled) next time event in table";
-      discrete input Real pre_nextTimeEvent "Pre-value of (scaled) next time event in table";
+      input Real nextTimeEvent "(Scaled) next time event in table";
+      input Real pre_nextTimeEvent "Pre-value of (scaled) next time event in table";
       output Real y "Interpolated value";
       external "C" y = ModelicaTableAdditions_CombiTimeTable_getValue(tableID, icol, timeIn, nextTimeEvent, pre_nextTimeEvent)
         annotation (IncludeDirectory="modelica://ModelicaTableAdditions/Resources/C-Sources", Include="#include \"ModelicaTableAdditions.h\"", Library={"ModelicaTableAdditions", "ModelicaIOAdditions", "ModelicaMatIO", "zlib", "parson"});
@@ -1043,8 +1071,8 @@ MATLAB is a registered trademark of The MathWorks, Inc.
       input ModelicaTableAdditions.Blocks.Types.ExternalCombiTimeTable tableID "External table object";
       input Integer icol "Column number";
       input Real timeIn "(Scaled) time value";
-      discrete input Real nextTimeEvent "(Scaled) next time event in table";
-      discrete input Real pre_nextTimeEvent "Pre-value of (scaled) next time event in table";
+      input Real nextTimeEvent "(Scaled) next time event in table";
+      input Real pre_nextTimeEvent "Pre-value of (scaled) next time event in table";
       output Real y "Interpolated value";
       external "C" y = ModelicaTableAdditions_CombiTimeTable_getValue(tableID, icol, timeIn, nextTimeEvent, pre_nextTimeEvent)
         annotation (IncludeDirectory="modelica://ModelicaTableAdditions/Resources/C-Sources", Include="#include \"ModelicaTableAdditions.h\"", Library={"ModelicaTableAdditions", "ModelicaIOAdditions", "ModelicaMatIO", "zlib", "parson"});
@@ -1059,8 +1087,8 @@ MATLAB is a registered trademark of The MathWorks, Inc.
       input ModelicaTableAdditions.Blocks.Types.ExternalCombiTimeTable tableID "External table object";
       input Integer icol "Column number";
       input Real timeIn "(Scaled) time value";
-      discrete input Real nextTimeEvent "(Scaled) next time event in table";
-      discrete input Real pre_nextTimeEvent "Pre-value of (scaled) next time event in table";
+      input Real nextTimeEvent "(Scaled) next time event in table";
+      input Real pre_nextTimeEvent "Pre-value of (scaled) next time event in table";
       input Real der_timeIn "Derivative of (scaled) time value";
       output Real der_y "Derivative of interpolated value";
       external "C" der_y = ModelicaTableAdditions_CombiTimeTable_getDerValue(tableID, icol, timeIn, nextTimeEvent, pre_nextTimeEvent, der_timeIn)
@@ -1077,8 +1105,8 @@ MATLAB is a registered trademark of The MathWorks, Inc.
       input ModelicaTableAdditions.Blocks.Types.ExternalCombiTimeTable tableID "External table object";
       input Integer icol "Column number";
       input Real timeIn "(Scaled) time value";
-      discrete input Real nextTimeEvent "(Scaled) next time event in table";
-      discrete input Real pre_nextTimeEvent "Pre-value of (scaled) next time event in table";
+      input Real nextTimeEvent "(Scaled) next time event in table";
+      input Real pre_nextTimeEvent "Pre-value of (scaled) next time event in table";
       input Real der_timeIn "Derivative of (scaled) time value";
       output Real der_y "Derivative of interpolated value";
       external "C" der_y = ModelicaTableAdditions_CombiTimeTable_getDerValue(tableID, icol, timeIn, nextTimeEvent, pre_nextTimeEvent, der_timeIn)
@@ -1091,8 +1119,8 @@ MATLAB is a registered trademark of The MathWorks, Inc.
       input ModelicaTableAdditions.Blocks.Types.ExternalCombiTimeTable tableID "External table object";
       input Integer icol "Column number";
       input Real timeIn "(Scaled) time value";
-      discrete input Real nextTimeEvent "(Scaled) next time event in table";
-      discrete input Real pre_nextTimeEvent "Pre-value of (scaled) next time event in table";
+      input Real nextTimeEvent "(Scaled) next time event in table";
+      input Real pre_nextTimeEvent "Pre-value of (scaled) next time event in table";
       input Real der_timeIn "Derivative of (scaled) time value";
       input Real der2_timeIn "Second derivative of (scaled) time value";
       output Real der2_y "Second derivative of interpolated value";
@@ -1361,7 +1389,7 @@ initial equation
   dummy = getUsertab(table.y);
 equation
   connect(clock.y, table.u[1]) annotation (Line(points={{-59,10},{-42,10}}, color={0,0,127}));
-  annotation (experiment(StartTime=0, StopTime=5), uses(Modelica(version=\"4.0.0\")));
+  annotation (experiment(StartTime=0, StopTime=5));
 end ExampleCTable;
 </pre></blockquote>
 </html>"), Icon(coordinateSystem(preserveAspectRatio=false, extent={{-100,-100},
