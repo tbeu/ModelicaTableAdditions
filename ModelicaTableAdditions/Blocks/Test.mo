@@ -93,14 +93,52 @@ package Test "Test models"
       tableName="tab1",
       fileName=Modelica.Utilities.Files.loadResource("modelica://ModelicaTableAdditions/Resources/Data/Tables/test.txt"),
       forceRead=true)
-      annotation(Placement(transformation(extent={{-60,20},{-40,40}})));
+      annotation (Placement(transformation(extent={{-60,20},{-40,40}})));
     Modelica.Blocks.Sources.BooleanExpression booleanExpression(y=sample(0, 10))
-      annotation(Placement(transformation(extent={{-78,52},{-58,72}})));
+      annotation (Placement(transformation(extent={{-78,52},{-58,72}})));
   equation
     connect(fileUpdateTimeTable.updateTrigger, booleanExpression.y)
-      annotation(Line(points={{-50,42},{-50,62},{-57,62}}, color={255,0,255}));
+      annotation (Line(points={{-50,42},{-50,62},{-57,62}}, color={255,0,255}));
     annotation (Icon(coordinateSystem(preserveAspectRatio=false, extent={{-100,-100},{100,100}})), Diagram(
           coordinateSystem(preserveAspectRatio=false, extent={{-100,0},{0,100}})),
       experiment(StopTime=45));
   end TestFileUpdateTimeTable;
+
+  model TestWeatherEPWFile "Weather data from EPW file"
+    extends Modelica.Icons.Example;
+    constant Modelica.Units.SI.EnergyFluence unitEnergyFluence = 1;
+    record EPWCols "Column indices of EPW file"
+      constant Integer 'dry bulb temperature' = 2 "EPW index for dry bulb temperature in degC";
+      constant Integer 'dew point temperature' = 3 "EPW index for dew point temperature in degC";
+      constant Integer 'relative humidity' = 4 "EPW index for relative humidity in %";
+      constant Integer 'atmospheric pressure' = 5 "EPW index for atmospheric_pressure in Pa";
+      constant Integer 'global solar' = 9 "EPW index for global horizontal radiation in W.h/m2";
+      constant Integer 'normal solar' = 10 "EPW index for direct normal radiation in W.h/m2";
+      constant Integer 'diffuse solar' = 11 "EPW index for diffuse horizontal radiation in W.h/m2";
+      constant Integer 'wind speed' = 17 "EPW index for wind speed in m/s";
+    end EPWCols;
+    ModelicaTableAdditions.Blocks.Sources.CombiTimeTable combiTimeTable(
+      tableOnFile=true,
+      fileName=Modelica.Utilities.Files.loadResource("modelica://ModelicaTableAdditions/Resources/Data/Weather/weather.epw"),
+      columns={EPWCols.'dry bulb temperature', EPWCols.'normal solar'},
+      smoothness=Modelica.Blocks.Types.Smoothness.ModifiedContinuousDerivative,
+      extrapolation=Modelica.Blocks.Types.Extrapolation.HoldLastPoint,
+      shiftTime=1800)
+      annotation (Placement(transformation(extent={{-80,40},{-60,60}})));
+    Modelica.Blocks.Math.UnitConversions.From_degC 'dry bulb temperature'(
+      y(displayUnit="degC"))
+      annotation (Placement(transformation(extent={{-40,60},{-20,80}})));
+    Modelica.Blocks.Math.Gain 'normal solar'(
+      k=3600*unitEnergyFluence,
+      y(unit="J/m2", quantity="EnergyFluence", displayUnit="kW.h/m2"))
+      annotation (Placement(transformation(extent={{-40,20},{-20,40}})));
+  equation
+    connect(combiTimeTable.y[1], 'dry bulb temperature'.u)
+      annotation (Line(points={{-59,50},{-52,50},{-52,70},{-42,70}}, color={0,0,127}));
+    connect(combiTimeTable.y[2], 'normal solar'.u)
+      annotation (Line(points={{-42,30},{-52,30},{-52,50},{-59,50}}, color={0,0,127}));
+    annotation (Icon(coordinateSystem(preserveAspectRatio=false, extent={{-100,-100},{100,100}})), Diagram(
+          coordinateSystem(preserveAspectRatio=false, extent={{-100,0},{0,100}})),
+      experiment(StopTime=31536000, Interval=1800));
+  end TestWeatherEPWFile;
 end Test;
