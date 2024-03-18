@@ -780,6 +780,7 @@ static double* readCsvTable(_In_z_ const char* fileName, _In_z_ const char* tabl
     int bufLen = LINE_BUFFER_LENGTH;
     FILE* fp;
     int readError;
+    int firstColToRowNumber = 0;
     unsigned long nRow = 0;
     unsigned long nCol = 0;
     unsigned long lineNo = 1;
@@ -792,8 +793,8 @@ static double* readCsvTable(_In_z_ const char* fileName, _In_z_ const char* tabl
 #else
     char* dec;
 #endif
-    char delimTable[5] = " \t\r";
-    if (delimiter[0] != ' ' && delimiter[0] != '\t' && delimiter[0] != '\r') {
+    char delimTable[5] = "\t\r";
+    if (delimiter[0] != '\t' && delimiter[0] != '\r') {
         strncat(delimTable, delimiter, 1);
     }
 
@@ -906,12 +907,18 @@ static double* readCsvTable(_In_z_ const char* fileName, _In_z_ const char* tabl
 #if !defined(NO_LOCALE) && (defined(_MSC_VER) && _MSC_VER >= 1400)
                 table[i*nCol + j] = _strtod_l(token, &endptr, loc);
                 if (*endptr != 0) {
-                    readError = 1;
+                    if (i == 0 && j == 0) {
+                        firstColToRowNumber = 1;
+                    }
+                    table[i*nCol + j] = (j == 0 && firstColToRowNumber == 1) ? i : 0.0;
                 }
 #elif !defined(NO_LOCALE) && (defined(__GLIBC__) && defined(__GLIBC_MINOR__) && ((__GLIBC__ << 16) + __GLIBC_MINOR__ >= (2 << 16) + 3))
                 table[i*nCol + j] = strtod_l(token, &endptr, loc);
                 if (*endptr != 0) {
-                    readError = 1;
+                    if (i == 0 && j == 0) {
+                        firstColToRowNumber = 1;
+                    }
+                    table[i*nCol + j] = (j == 0 && firstColToRowNumber == 1) ? i : 0.0;
                 }
 #else
                 if (*dec == '.') {

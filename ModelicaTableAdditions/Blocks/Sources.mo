@@ -289,8 +289,7 @@ source code are removed by the C-preprocessor, such that no access to files take
 If the table is read from a CSV file, the following limitations apply
 </p>
 <ol>
-<li>Non-numeric data is not supported (in the lines following the header lines), even if such columns are excluded.</li>
-<li>Double-quoted data entries in the first header line shall not contain the column delimiter.</li>
+<li>Non-numeric data is silently considered as value 0.0.</li>
 </ol>
 <p>
 If tables are read from a text file, the file needs to have the
@@ -534,8 +533,7 @@ source code are removed by the C-preprocessor, such that no access to files take
 If the table is read from a CSV file, the following limitations apply
 </p>
 <ol>
-<li>Non-numeric data is not supported (in the lines following the header lines), even if such columns are excluded.</li>
-<li>Double-quoted data entries in the first header line shall not contain the column delimiter.</li>
+<li>Non-numeric data is silently considered as value 0.0.</li>
 </ol>
 <p>
 If tables are read from a text file, the file needs to have the
