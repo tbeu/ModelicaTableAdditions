@@ -141,4 +141,27 @@ package Test "Test models"
           coordinateSystem(preserveAspectRatio=false, extent={{-100,0},{0,100}})),
       experiment(StopTime=31536000, Interval=1800));
   end TestWeatherEPWFile;
+
+  model TestWeatherCSVFile "Weather data from CSV file"
+    extends Modelica.Icons.Example;
+    ModelicaTableAdditions.Blocks.Sources.CombiTimeTable combiTimeTable(
+      tableOnFile=true,
+      fileName=Modelica.Utilities.Files.loadResource("modelica://ModelicaTableAdditions/Resources/Data/Weather/weather.csv"),
+      columns={7},
+      nHeaderLines=1,
+      smoothness=Modelica.Blocks.Types.Smoothness.ModifiedContinuousDerivative,
+      extrapolation=Modelica.Blocks.Types.Extrapolation.HoldLastPoint,
+      timeScale=3600,
+      shiftTime=1800)
+      annotation (Placement(transformation(extent={{-80,40},{-60,60}})));
+    Modelica.Blocks.Math.UnitConversions.From_degC 'temperature'(
+      y(displayUnit="degC"))
+      annotation (Placement(transformation(extent={{-40,40},{-20,60}})));
+  equation
+    connect(combiTimeTable.y[1], 'temperature'.u)
+      annotation (Line(points={{-59,50},{-42,50}}, color={0,0,127}));
+    annotation (Icon(coordinateSystem(preserveAspectRatio=false, extent={{-100,-100},{100,100}})), Diagram(
+          coordinateSystem(preserveAspectRatio=false, extent={{-100,0},{0,100}})),
+      experiment(StopTime=31536000, Interval=1800));
+  end TestWeatherCSVFile;
 end Test;
