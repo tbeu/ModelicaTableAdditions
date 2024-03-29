@@ -41,6 +41,12 @@
                      Fixed error handling for invalid format specifier in
                      text file (ticket #3903)
 
+      Mar. 26, 2021: by Thomas Beutlich
+                     Added reading of EPW files
+
+      Mar. 03, 2021: by Thomas Beutlich
+                     Added reading of JSON files
+
       Dec. 22, 2020: by Thomas Beutlich
                      Added reading of CSV files (ticket #1153)
 
