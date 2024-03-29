@@ -1081,7 +1081,7 @@ static double* readEpwTable(_In_z_ const char* fileName, _In_z_ const char* tabl
         /* 23 */ "999",
         /* 24 */ "999",
         /* 25 */ "999",
-        /* 26 */ "99"
+        /* 26 */ "99",
         /* 27 */ "",
         /* 28 */ "",
         /* 29 */ ""
