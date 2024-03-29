@@ -184,6 +184,9 @@ double* ModelicaIOAdditions_readRealTable(_In_z_ const char* fileName,
 #include <stdio.h>
 #if !defined(NO_LOCALE)
 #include <locale.h>
+#if defined(HAVE_XLOCALE_H)
+#include <xlocale.h>
+#endif
 #endif
 #include "ModelicaMatIO.h"
 #include "parson.h"
@@ -211,6 +214,14 @@ double* ModelicaIOAdditions_readRealTable(_In_z_ const char* fileName,
 #endif
 #if !defined(MATLAB_NAME_LENGTH_MAX)
 #define MATLAB_NAME_LENGTH_MAX (64)
+#endif
+
+#if !defined(NO_LOCALE) && !defined(HAVE_STRTOD_L)
+#if defined(HAVE_XLOCALE_H)
+#define HAVE_STRTOD_L 1
+#elif defined(__GLIBC__) && defined(__GLIBC_MINOR__) && ((__GLIBC__ << 16) + __GLIBC_MINOR__ >= (2 << 16) + 3)
+#define HAVE_STRTOD_L 1
+#endif
 #endif
 
 typedef struct MatIO {
@@ -786,15 +797,16 @@ static double* readCsvTable(_In_z_ const char* fileName, _In_z_ const char* tabl
     int bufLen = LINE_BUFFER_LENGTH;
     FILE* fp;
     int readError;
-    int firstColToRowNumber = 0;
     unsigned long nRow = 0;
     unsigned long nCol = 0;
     unsigned long lineNo = 1;
 #if defined(NO_LOCALE)
     const char * const dec = ".";
 #elif defined(_MSC_VER) && _MSC_VER >= 1400
+    int firstColToRowNumber = 0;
     _locale_t loc;
-#elif defined(__GLIBC__) && defined(__GLIBC_MINOR__) && ((__GLIBC__ << 16) + __GLIBC_MINOR__ >= (2 << 16) + 3)
+#elif defined(HAVE_STRTOD_L)
+    int firstColToRowNumber = 0;
     locale_t loc;
 #else
     char* dec;
@@ -836,7 +848,7 @@ static double* readCsvTable(_In_z_ const char* fileName, _In_z_ const char* tabl
 #if defined(NO_LOCALE)
 #elif defined(_MSC_VER) && _MSC_VER >= 1400
     loc = _create_locale(LC_NUMERIC, "C");
-#elif defined(__GLIBC__) && defined(__GLIBC_MINOR__) && ((__GLIBC__ << 16) + __GLIBC_MINOR__ >= (2 << 16) + 3)
+#elif defined(HAVE_STRTOD_L)
     loc = newlocale(LC_NUMERIC, "C", NULL);
 #else
     dec = localeconv()->decimal_point;
@@ -879,7 +891,7 @@ static double* readCsvTable(_In_z_ const char* fileName, _In_z_ const char* tabl
 #if defined(NO_LOCALE)
 #elif defined(_MSC_VER) && _MSC_VER >= 1400
             _free_locale(loc);
-#elif defined(__GLIBC__) && defined(__GLIBC_MINOR__) && ((__GLIBC__ << 16) + __GLIBC_MINOR__ >= (2 << 16) + 3)
+#elif defined(HAVE_STRTOD_L)
             freelocale(loc);
 #endif
             ModelicaError("Memory allocation error\n");
@@ -918,7 +930,7 @@ static double* readCsvTable(_In_z_ const char* fileName, _In_z_ const char* tabl
                     }
                     table[i*nCol + j] = (j == 0 && firstColToRowNumber == 1) ? i : 0.0;
                 }
-#elif !defined(NO_LOCALE) && (defined(__GLIBC__) && defined(__GLIBC_MINOR__) && ((__GLIBC__ << 16) + __GLIBC_MINOR__ >= (2 << 16) + 3))
+#elif !defined(NO_LOCALE) && defined(HAVE_STRTOD_L)
                 table[i*nCol + j] = strtod_l(token, &endptr, loc);
                 if (*endptr != 0) {
                     if (i == 0 && j == 0) {
@@ -973,7 +985,7 @@ static double* readCsvTable(_In_z_ const char* fileName, _In_z_ const char* tabl
 #if defined(NO_LOCALE)
 #elif defined(_MSC_VER) && _MSC_VER >= 1400
     _free_locale(loc);
-#elif defined(__GLIBC__) && defined(__GLIBC_MINOR__) && ((__GLIBC__ << 16) + __GLIBC_MINOR__ >= (2 << 16) + 3)
+#elif defined(HAVE_STRTOD_L)
     freelocale(loc);
 #endif
 
@@ -1037,7 +1049,7 @@ static double* readEpwTable(_In_z_ const char* fileName, _In_z_ const char* tabl
     const char * const dec = ".";
 #elif defined(_MSC_VER) && _MSC_VER >= 1400
     _locale_t loc;
-#elif defined(__GLIBC__) && defined(__GLIBC_MINOR__) && ((__GLIBC__ << 16) + __GLIBC_MINOR__ >= (2 << 16) + 3)
+#elif defined(HAVE_STRTOD_L)
     locale_t loc;
 #else
     char* dec;
@@ -1143,7 +1155,7 @@ static double* readEpwTable(_In_z_ const char* fileName, _In_z_ const char* tabl
 #if defined(NO_LOCALE)
 #elif defined(_MSC_VER) && _MSC_VER >= 1400
     loc = _create_locale(LC_NUMERIC, "C");
-#elif defined(__GLIBC__) && defined(__GLIBC_MINOR__) && ((__GLIBC__ << 16) + __GLIBC_MINOR__ >= (2 << 16) + 3)
+#elif defined(HAVE_STRTOD_L)
     loc = newlocale(LC_NUMERIC, "C", NULL);
 #else
     dec = localeconv()->decimal_point;
@@ -1179,7 +1191,7 @@ static double* readEpwTable(_In_z_ const char* fileName, _In_z_ const char* tabl
 #if defined(NO_LOCALE)
 #elif defined(_MSC_VER) && _MSC_VER >= 1400
             _free_locale(loc);
-#elif defined(__GLIBC__) && defined(__GLIBC_MINOR__) && ((__GLIBC__ << 16) + __GLIBC_MINOR__ >= (2 << 16) + 3)
+#elif defined(HAVE_STRTOD_L)
             freelocale(loc);
 #endif
             ModelicaError("Memory allocation error\n");
@@ -1217,7 +1229,7 @@ static double* readEpwTable(_In_z_ const char* fileName, _In_z_ const char* tabl
                 if (*endptr != 0) {
                     readError = 1;
                 }
-#elif !defined(NO_LOCALE) && (defined(__GLIBC__) && defined(__GLIBC_MINOR__) && ((__GLIBC__ << 16) + __GLIBC_MINOR__ >= (2 << 16) + 3))
+#elif !defined(NO_LOCALE) && defined(HAVE_STRTOD_L)
                 time[j] = strtol_l(token, &endptr, 10, loc);
                 if (*endptr != 0) {
                     readError = 1;
@@ -1306,7 +1318,7 @@ static double* readEpwTable(_In_z_ const char* fileName, _In_z_ const char* tabl
                 if (*endptr != 0) {
                     readError = 1;
                 }
-#elif !defined(NO_LOCALE) && (defined(__GLIBC__) && defined(__GLIBC_MINOR__) && ((__GLIBC__ << 16) + __GLIBC_MINOR__ >= (2 << 16) + 3))
+#elif !defined(NO_LOCALE) && defined(HAVE_STRTOD_L)
                 table[i*nCol + j] = strtod_l(token, &endptr, loc);
                 if (*endptr != 0) {
                     readError = 1;
@@ -1372,7 +1384,7 @@ static double* readEpwTable(_In_z_ const char* fileName, _In_z_ const char* tabl
 #if defined(NO_LOCALE)
 #elif defined(_MSC_VER) && _MSC_VER >= 1400
     _free_locale(loc);
-#elif defined(__GLIBC__) && defined(__GLIBC_MINOR__) && ((__GLIBC__ << 16) + __GLIBC_MINOR__ >= (2 << 16) + 3)
+#elif defined(HAVE_STRTOD_L)
     freelocale(loc);
 #endif
 
@@ -1524,7 +1536,7 @@ static double* readJsonTable(_In_z_ const char* fileName, _In_z_ const char* tab
             const char * const dec = ".";
 #elif defined(_MSC_VER) && _MSC_VER >= 1400
             _locale_t loc;
-#elif defined(__GLIBC__) && defined(__GLIBC_MINOR__) && ((__GLIBC__ << 16) + __GLIBC_MINOR__ >= (2 << 16) + 3)
+#elif defined(HAVE_STRTOD_L)
             locale_t loc;
 #else
             char* dec;
@@ -1532,7 +1544,7 @@ static double* readJsonTable(_In_z_ const char* fileName, _In_z_ const char* tab
 #if defined(NO_LOCALE)
 #elif defined(_MSC_VER) && _MSC_VER >= 1400
             loc = _create_locale(LC_NUMERIC, "C");
-#elif defined(__GLIBC__) && defined(__GLIBC_MINOR__) && ((__GLIBC__ << 16) + __GLIBC_MINOR__ >= (2 << 16) + 3)
+#elif defined(HAVE_STRTOD_L)
             loc = newlocale(LC_NUMERIC, "C", NULL);
 #else
             dec = localeconv()->decimal_point;
@@ -1552,7 +1564,7 @@ static double* readJsonTable(_In_z_ const char* fileName, _In_z_ const char* tab
                             if (*endptr != 0) {
                                 readError = 1;
                             }
-#elif !defined(NO_LOCALE) && (defined(__GLIBC__) && defined(__GLIBC_MINOR__) && ((__GLIBC__ << 16) + __GLIBC_MINOR__ >= (2 << 16) + 3))
+#elif !defined(NO_LOCALE) && defined(HAVE_STRTOD_L)
                             table[i*nCol + j] = strtod_l(tokenCopy, &endptr, loc);
                             if (*endptr != 0) {
                                 readError = 1;
@@ -1662,7 +1674,7 @@ static double* readTxtTable(_In_z_ const char* fileName, _In_z_ const char* tabl
     const char * const dec = ".";
 #elif defined(_MSC_VER) && _MSC_VER >= 1400
     _locale_t loc;
-#elif defined(__GLIBC__) && defined(__GLIBC_MINOR__) && ((__GLIBC__ << 16) + __GLIBC_MINOR__ >= (2 << 16) + 3)
+#elif defined(HAVE_STRTOD_L)
     locale_t loc;
 #else
     char* dec;
@@ -1734,7 +1746,7 @@ static double* readTxtTable(_In_z_ const char* fileName, _In_z_ const char* tabl
 #if defined(NO_LOCALE)
 #elif defined(_MSC_VER) && _MSC_VER >= 1400
     loc = _create_locale(LC_NUMERIC, "C");
-#elif defined(__GLIBC__) && defined(__GLIBC_MINOR__) && ((__GLIBC__ << 16) + __GLIBC_MINOR__ >= (2 << 16) + 3)
+#elif defined(HAVE_STRTOD_L)
     loc = newlocale(LC_NUMERIC, "C", NULL);
 #else
     dec = localeconv()->decimal_point;
@@ -1773,7 +1785,7 @@ static double* readTxtTable(_In_z_ const char* fileName, _In_z_ const char* tabl
         }
 #if !defined(NO_LOCALE) && (defined(_MSC_VER) && _MSC_VER >= 1400)
         nRow = (unsigned long)_strtol_l(token, &endptr, 10, loc);
-#elif !defined(NO_LOCALE) && (defined(__GLIBC__) && defined(__GLIBC_MINOR__) && ((__GLIBC__ << 16) + __GLIBC_MINOR__ >= (2 << 16) + 3))
+#elif !defined(NO_LOCALE) && defined(HAVE_STRTOD_L)
         nRow = (unsigned long)strtol_l(token, &endptr, 10, loc);
 #else
         nRow = (unsigned long)strtol(token, &endptr, 10);
@@ -1787,7 +1799,7 @@ static double* readTxtTable(_In_z_ const char* fileName, _In_z_ const char* tabl
         }
 #if !defined(NO_LOCALE) && (defined(_MSC_VER) && _MSC_VER >= 1400)
         nCol = (unsigned long)_strtol_l(token, &endptr, 10, loc);
-#elif !defined(NO_LOCALE) && (defined(__GLIBC__) && defined(__GLIBC_MINOR__) && ((__GLIBC__ << 16) + __GLIBC_MINOR__ >= (2 << 16) + 3))
+#elif !defined(NO_LOCALE) && defined(HAVE_STRTOD_L)
         nCol = (unsigned long)strtol_l(token, &endptr, 10, loc);
 #else
         nCol = (unsigned long)strtol(token, &endptr, 10);
@@ -1810,7 +1822,7 @@ static double* readTxtTable(_In_z_ const char* fileName, _In_z_ const char* tabl
 #if defined(NO_LOCALE)
 #elif defined(_MSC_VER) && _MSC_VER >= 1400
                 _free_locale(loc);
-#elif defined(__GLIBC__) && defined(__GLIBC_MINOR__) && ((__GLIBC__ << 16) + __GLIBC_MINOR__ >= (2 << 16) + 3)
+#elif defined(HAVE_STRTOD_L)
                 freelocale(loc);
 #endif
                 ModelicaError("Memory allocation error\n");
@@ -1850,7 +1862,7 @@ static double* readTxtTable(_In_z_ const char* fileName, _In_z_ const char* tabl
                     if (*endptr != 0) {
                         readError = 1;
                     }
-#elif !defined(NO_LOCALE) && (defined(__GLIBC__) && defined(__GLIBC_MINOR__) && ((__GLIBC__ << 16) + __GLIBC_MINOR__ >= (2 << 16) + 3))
+#elif !defined(NO_LOCALE) && defined(HAVE_STRTOD_L)
                     table[i*nCol + j] = strtod_l(token, &endptr, loc);
                     if (*endptr != 0) {
                         readError = 1;
@@ -1958,7 +1970,7 @@ static double* readTxtTable(_In_z_ const char* fileName, _In_z_ const char* tabl
 #if defined(NO_LOCALE)
 #elif defined(_MSC_VER) && _MSC_VER >= 1400
     _free_locale(loc);
-#elif defined(__GLIBC__) && defined(__GLIBC_MINOR__) && ((__GLIBC__ << 16) + __GLIBC_MINOR__ >= (2 << 16) + 3)
+#elif defined(HAVE_STRTOD_L)
     freelocale(loc);
 #endif
     if (foundTable == 0) {
