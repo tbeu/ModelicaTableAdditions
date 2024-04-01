@@ -1461,7 +1461,7 @@ static int json_array_check_dimensions2D(const JSON_Array *array, size_t* n) {
             if (i == 0) {
                 *n = json_array_get_count(subArray);
             }
-            else if (*n >= 0 && *n != json_array_get_count(subArray)) {
+            else if (*n != json_array_get_count(subArray)) {
                 return 1; /* Dimension error */
             }
         }
