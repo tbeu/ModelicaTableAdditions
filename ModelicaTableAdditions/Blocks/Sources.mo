@@ -38,7 +38,7 @@ package Sources
       "Columns of table to be interpolated"
       annotation (Dialog(group="Table data interpretation",
       groupImage="modelica://Modelica/Resources/Images/Blocks/Sources/CombiTimeTable.png"));
-    parameter Modelica.Blocks.Types.Smoothness smoothness=Modelica.Blocks.Types.Smoothness.LinearSegments
+    parameter ModelicaTableAdditions.Blocks.Types.Smoothness smoothness=ModelicaTableAdditions.Blocks.Types.Smoothness.LinearSegments
       "Smoothness of table interpolation"
       annotation (Dialog(group="Table data interpretation"));
     parameter Modelica.Blocks.Types.Extrapolation extrapolation=Modelica.Blocks.Types.Extrapolation.LastTwoPoints
@@ -82,7 +82,7 @@ package Sources
           smoothness,
           extrapolation,
           shiftTime/timeScale,
-          if smoothness == Modelica.Blocks.Types.Smoothness.LinearSegments then timeEvents elseif smoothness == Modelica.Blocks.Types.Smoothness.ConstantSegments then Modelica.Blocks.Types.TimeEvents.Always else Modelica.Blocks.Types.TimeEvents.NoTimeEvents,
+          if smoothness == ModelicaTableAdditions.Blocks.Types.Smoothness.LinearSegments then timeEvents elseif smoothness == ModelicaTableAdditions.Blocks.Types.Smoothness.ConstantSegments then Modelica.Blocks.Types.TimeEvents.Always else Modelica.Blocks.Types.TimeEvents.NoTimeEvents,
           if tableOnFile then verboseRead else false,
           delimiter,
           nHeaderLines) "External table object";
@@ -120,11 +120,11 @@ than the shifted maximum abscissa value defined in the table.
       nextTimeEventScaled = Internal.getNextTimeEvent(tableID, timeScaled);
       nextTimeEvent = if nextTimeEventScaled < Modelica.Constants.inf then nextTimeEventScaled*timeScale else Modelica.Constants.inf;
     end when;
-    if smoothness == Modelica.Blocks.Types.Smoothness.ConstantSegments then
+    if smoothness == ModelicaTableAdditions.Blocks.Types.Smoothness.ConstantSegments then
       for i in 1:nout loop
         y[i] = p_offset[i] + Internal.getTimeTableValueNoDer(tableID, i, timeScaled, nextTimeEventScaled, pre(nextTimeEventScaled));
       end for;
-    elseif smoothness == Modelica.Blocks.Types.Smoothness.LinearSegments then
+    elseif smoothness == ModelicaTableAdditions.Blocks.Types.Smoothness.LinearSegments then
       for i in 1:nout loop
         y[i] = p_offset[i] + Internal.getTimeTableValueNoDer2(tableID, i, timeScaled, nextTimeEventScaled, pre(nextTimeEventScaled));
       end for;
@@ -179,6 +179,8 @@ smoothness = 1: Linear interpolation
                 Hermite splines such that der(y) is continuous, also if
                 extrapolated. Additionally, overshoots and edge cases of the
                 original Akima interpolation method are avoided.
+           = 7: Natural cubic spline interpolation, such that der(y) and der2(y)
+                are continuous.
 </pre></blockquote></li>
 <li>First and second <strong>derivatives</strong> are provided, with exception of the following two smoothness options.
 <ol>
@@ -433,6 +435,8 @@ smoothness = 1: Linear interpolation
                 Hermite splines such that der(y) is continuous, also if
                 extrapolated. Additionally, overshoots and edge cases of the
                 original Akima interpolation method are avoided.
+           = 7: Natural cubic spline interpolation, such that der(y) and der2(y)
+                are continuous.
 </pre></blockquote></li>
 <li>First and second <strong>derivatives</strong> are provided, with exception of the following two smoothness options.
 <ol>

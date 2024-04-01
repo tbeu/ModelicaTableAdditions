@@ -34,6 +34,7 @@ the 14th International Modelica Conference_. Ed. by Martin Sjölund, Lena Buffon
   * Constant segments
   * Bilinear segments
   * Akima splines
+  * Natural cubic splines
 * Extrapolation by
   * Constant continuation
   * Continuously differentiable continuation

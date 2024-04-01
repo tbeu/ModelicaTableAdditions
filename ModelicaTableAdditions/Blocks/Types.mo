@@ -3,6 +3,22 @@ package Types
   "Library of constants, external objects and types with choices, especially to build menus"
   extends Modelica.Icons.TypesPackage;
 
+  type Smoothness = enumeration(
+      LinearSegments "Linear interpolation",
+      ContinuousDerivative
+        "Akima spline interpolation (such that the first derivative is continuous)",
+      ConstantSegments
+        "Piecewise constant interpolation (the value from the previous abscissa point is returned)",
+      MonotoneContinuousDerivative1
+        "Fritsch-Butland spline interpolation (such that the monotonicity is preserved and the first derivative is continuous)",
+      MonotoneContinuousDerivative2
+        "Steffen spline interpolation (such that the monotonicity is preserved and the first derivative is continuous)",
+      ModifiedContinuousDerivative
+        "Modified Akima spline interpolation (such that the first derivative is continuous and shortcomings of the original Akima method are avoided)",
+      NaturalCubicSpline
+        "Cubic spline interpolation with natural boundary conditions (such that the first and second derivatives are continuous)")
+    "Enumeration defining the smoothness of table interpolation";
+
   class ExternalCombiTimeTable
     "External object of 1-dim. table where first column is time"
     extends ExternalObject;
@@ -14,7 +30,7 @@ package Types
       input Real table[:, :];
       input Real startTime;
       input Integer columns[:];
-      input Modelica.Blocks.Types.Smoothness smoothness;
+      input Smoothness smoothness;
       input Modelica.Blocks.Types.Extrapolation extrapolation;
       input Real shiftTime=0.0;
       input Modelica.Blocks.Types.TimeEvents timeEvents=Modelica.Blocks.Types.TimeEvents.Always;
@@ -59,7 +75,7 @@ package Types
       input String fileName "File name";
       input Real table[:, :];
       input Integer columns[:];
-      input Modelica.Blocks.Types.Smoothness smoothness;
+      input Smoothness smoothness;
       input Modelica.Blocks.Types.Extrapolation extrapolation=Modelica.Blocks.Types.Extrapolation.LastTwoPoints;
       input Boolean verboseRead=true "= true: Print info message; = false: No info message";
       input String delimiter="," "Column delimiter character for CSV file";
@@ -98,7 +114,7 @@ package Types
       input String tableName "Table name";
       input String fileName "File name";
       input Real table[:, :];
-      input Modelica.Blocks.Types.Smoothness smoothness;
+      input Smoothness smoothness;
       input Modelica.Blocks.Types.Extrapolation extrapolation=Modelica.Blocks.Types.Extrapolation.LastTwoPoints;
       input Boolean verboseRead=true "= true: Print info message; = false: No info message";
       input String delimiter="," "Column delimiter character for CSV file";
@@ -128,7 +144,7 @@ package Types
   annotation (Documentation(info="<html>
 <p>
 In this package <strong>types</strong>, <strong>constants</strong> and <strong>external objects</strong> are defined that are used
-in library Modelica.Blocks. The types have additional annotation choices
+in library ModelicaTableAdditions.Blocks. The types have additional annotation choices
 definitions that define the menus to be built up in the graphical
 user interface when the type is used as parameter in a declaration.
 </p>

@@ -39,6 +39,9 @@
       ModelicaTableAdditions.Blocks.Tables.CombiTable2Dv
 
    Changelog:
+      Apr. 01, 2024: by Thomas Beutlich
+                     Added natural cubic spline interpolation
+
       Mar. 23, 2024: by Thomas Beutlich
                      Restored checks for extrapolation detection in CombiTable2D as
                      regression of ticket #3893 (ticket #4343)
@@ -220,6 +223,7 @@ enum Smoothness {
     FRITSCH_BUTLAND_MONOTONE_C1,
     STEFFEN_MONOTONE_C1,
     MAKIMA_C1,
+    CUBIC_C2,
     AKIMA_C1 = CONTINUOUS_DERIVATIVE
 };
 
@@ -259,11 +263,11 @@ enum CleanUp {
 
 /* ----- Internal table memory ----- */
 
-/* 3 (of 4) 1D cubic Hermite spline coefficients (per interval) */
-typedef double CubicHermite1D[3];
+/* 3 (of 4) 1D cubic spline coefficients (per interval) */
+typedef double CubicSpline1D[3];
 
-/* 15 (of 16) 2D cubic Hermite spline coefficients (per grid) */
-typedef double CubicHermite2D[15];
+/* 15 (of 16) 2D cubic spline coefficients (per grid) */
+typedef double CubicSpline2D[15];
 
 /* Left and right interval indices (per interval) */
 typedef size_t Interval[2];
@@ -282,8 +286,8 @@ typedef struct CombiTimeTable {
     size_t nCols; /* Number of columns of table to be interpolated */
     double startTime; /* Start time of inter-/extrapolation */
     double shiftTime; /* Shift time of first table column */
-    CubicHermite1D* spline; /* Pre-calculated cubic Hermite spline coefficients,
-        only used if smoothness is AKIMA_C1 or MAKIMA_C1 or
+    CubicSpline1D* spline; /* Pre-calculated cubic spline coefficients,
+        only used if smoothness is AKIMA_C1 or MAKIMA_C1 or CUBIC_C2 or
         FRITSCH_BUTLAND_MONOTONE_C1 or STEFFEN_MONOTONE_C1 */
     size_t nEvent; /* Time event counter, discrete */
     double preNextTimeEvent; /* Time of previous time event, discrete */
@@ -309,8 +313,8 @@ typedef struct CombiTable1D {
     enum TableSource source; /* Source kind */
     int* cols; /* Columns of table to be interpolated */
     size_t nCols; /* Number of columns of table to be interpolated */
-    CubicHermite1D* spline; /* Pre-calculated cubic Hermite spline coefficients,
-        only used if smoothness is AKIMA_C1 or MAKIMA_C1 or
+    CubicSpline1D* spline; /* Pre-calculated cubic spline coefficients,
+        only used if smoothness is AKIMA_C1 or MAKIMA_C1 or CUBIC_C2 or
         FRITSCH_BUTLAND_MONOTONE_C1 or STEFFEN_MONOTONE_C1 */
 } CombiTable1D;
 
@@ -324,8 +328,8 @@ typedef struct CombiTable2D {
     enum Smoothness smoothness; /* Smoothness kind */
     enum Extrapolation extrapolation; /* Extrapolation kind */
     enum TableSource source; /* Source kind */
-    CubicHermite2D* spline; /* Pre-calculated cubic Hermite spline coefficients,
-        only used if smoothness is AKIMA_C1 */
+    CubicSpline2D* spline; /* Pre-calculated cubic spline coefficients,
+        only used if smoothness is AKIMA_C1 or CUBIC_C2 */
 } CombiTable2D;
 
 /* ----- Internal constants ----- */
@@ -567,7 +571,7 @@ static READ_RESULT readTable(_In_z_ const char* fileName, _In_z_ const char* tab
         pointer to array (row-wise storage) of table values
   */
 
-static CubicHermite1D* akimaSpline1DInit(_In_ const double* table, size_t nRow,
+static CubicSpline1D* akimaSpline1DInit(_In_ const double* table, size_t nRow,
                                          size_t nCol, _In_ const int* cols,
                                          size_t nCols) MODELICA_NONNULLATTR;
   /* Calculate the coefficients for univariate cubic Hermite spline
@@ -576,7 +580,7 @@ static CubicHermite1D* akimaSpline1DInit(_In_ const double* table, size_t nRow,
      <- RETURN: Pointer to array of coefficients
   */
 
-static CubicHermite1D* makimaSpline1DInit(_In_ const double* table, size_t nRow,
+static CubicSpline1D* makimaSpline1DInit(_In_ const double* table, size_t nRow,
                                          size_t nCol, _In_ const int* cols,
                                          size_t nCols) MODELICA_NONNULLATTR;
   /* Calculate the coefficients for univariate cubic Hermite spline
@@ -585,7 +589,7 @@ static CubicHermite1D* makimaSpline1DInit(_In_ const double* table, size_t nRow,
      <- RETURN: Pointer to array of coefficients
   */
 
-static CubicHermite1D* fritschButlandSpline1DInit(_In_ const double* table,
+static CubicSpline1D* fritschButlandSpline1DInit(_In_ const double* table,
                                                   size_t nRow, size_t nCol,
                                                   _In_ const int* cols,
                                                   size_t nCols) MODELICA_NONNULLATTR;
@@ -595,7 +599,7 @@ static CubicHermite1D* fritschButlandSpline1DInit(_In_ const double* table,
      <- RETURN: Pointer to array of coefficients
   */
 
-static CubicHermite1D* steffenSpline1DInit(_In_ const double* table,
+static CubicSpline1D* steffenSpline1DInit(_In_ const double* table,
                                            size_t nRow, size_t nCol,
                                            _In_ const int* cols,
                                            size_t nCols) MODELICA_NONNULLATTR;
@@ -605,19 +609,37 @@ static CubicHermite1D* steffenSpline1DInit(_In_ const double* table,
      <- RETURN: Pointer to array of coefficients
   */
 
-static void spline1DClose(CubicHermite1D** spline);
-  /* Free allocated memory of the 1D cubic Hermite spline coefficients */
+static CubicSpline1D* cubicSpline1DInit(_In_ const double* table,
+                                         size_t nRow, size_t nCol,
+                                         _In_ const int* cols,
+                                         size_t nCols) MODELICA_NONNULLATTR;
+  /* Calculate the coefficients for univariate natural cubic spline
+     interpolation
 
-static CubicHermite2D* spline2DInit(_In_ const double* table, size_t nRow,
-                                    size_t nCol) MODELICA_NONNULLATTR;
+     <- RETURN: Pointer to array of coefficients
+  */
+
+static void spline1DClose(CubicSpline1D** spline);
+  /* Free allocated memory of the 1D cubic spline coefficients */
+
+static CubicSpline2D* akimaSpline2DInit(_In_ const double* table, size_t nRow,
+                                        size_t nCol) MODELICA_NONNULLATTR;
   /* Calculate the coefficients for bivariate cubic Hermite spline
      interpolation with the Akima algorithm
 
      <- RETURN: Pointer to array of coefficients
   */
 
-static void spline2DClose(CubicHermite2D** spline);
-  /* Free allocated memory of the 2D cubic Hermite spline coefficients */
+static CubicSpline2D* cubicSpline2DInit(_In_ const double* table, size_t nRow,
+                                        size_t nCol) MODELICA_NONNULLATTR;
+  /* Calculate the coefficients for natural bicubic spline
+     interpolation
+
+     <- RETURN: Pointer to array of coefficients
+  */
+
+static void spline2DClose(CubicSpline2D** spline);
+  /* Free allocated memory of the 2D cubic spline coefficients */
 
 /* ----- Interface functions ----- */
 
@@ -828,11 +850,12 @@ void* ModelicaTableAdditions_CombiTimeTable_init3(_In_z_ const char* fileName,
         if (tableID->smoothness == AKIMA_C1 ||
             tableID->smoothness == MAKIMA_C1 ||
             tableID->smoothness == FRITSCH_BUTLAND_MONOTONE_C1 ||
-            tableID->smoothness == STEFFEN_MONOTONE_C1) {
+            tableID->smoothness == STEFFEN_MONOTONE_C1 ||
+            tableID->smoothness == CUBIC_C2) {
             tableID->smoothness = LINEAR_SEGMENTS;
         }
     }
-    /* Initialization of the cubic Hermite spline coefficients */
+    /* Initialization of the cubic spline coefficients */
     if (tableID->smoothness == AKIMA_C1) {
         tableID->spline = akimaSpline1DInit(
             (const double*)tableID->table, tableID->nRow,
@@ -853,10 +876,16 @@ void* ModelicaTableAdditions_CombiTimeTable_init3(_In_z_ const char* fileName,
             (const double*)tableID->table, tableID->nRow,
             tableID->nCol, (const int*)tableID->cols, tableID->nCols);
     }
+    else if (tableID->smoothness == CUBIC_C2) {
+        tableID->spline = cubicSpline1DInit(
+            (const double*)tableID->table, tableID->nRow,
+            tableID->nCol, (const int*)tableID->cols, tableID->nCols);
+    }
     if (tableID->smoothness == AKIMA_C1 ||
         tableID->smoothness == MAKIMA_C1 ||
         tableID->smoothness == FRITSCH_BUTLAND_MONOTONE_C1 ||
-        tableID->smoothness == STEFFEN_MONOTONE_C1) {
+        tableID->smoothness == STEFFEN_MONOTONE_C1 ||
+        tableID->smoothness == CUBIC_C2) {
         if (NULL == tableID->spline) {
             ModelicaTableAdditions_CombiTimeTable_close(tableID);
             ModelicaError("Memory allocation error\n");
@@ -1106,6 +1135,7 @@ double ModelicaTableAdditions_CombiTimeTable_getValue(void* _tableID, int iCol,
                         case MAKIMA_C1:
                         case FRITSCH_BUTLAND_MONOTONE_C1:
                         case STEFFEN_MONOTONE_C1:
+                        case CUBIC_C2:
                             if (NULL != tableID->spline) {
                                 const double* c = tableID->spline[
                                     IDX(last, (size_t)(iCol - 1), tableID->nCols)];
@@ -1145,6 +1175,7 @@ double ModelicaTableAdditions_CombiTimeTable_getValue(void* _tableID, int iCol,
                                 case MAKIMA_C1:
                                 case FRITSCH_BUTLAND_MONOTONE_C1:
                                 case STEFFEN_MONOTONE_C1:
+                                case CUBIC_C2:
                                     if (NULL != tableID->spline) {
                                         const double* c = tableID->spline[
                                             IDX(last, (size_t)(iCol - 1), tableID->nCols)];
@@ -1367,6 +1398,7 @@ double ModelicaTableAdditions_CombiTimeTable_getDerValue(void* _tableID, int iCo
                         case MAKIMA_C1:
                         case FRITSCH_BUTLAND_MONOTONE_C1:
                         case STEFFEN_MONOTONE_C1:
+                        case CUBIC_C2:
                             if (NULL != tableID->spline) {
                                 const double* c = tableID->spline[
                                     IDX(last, (size_t)(iCol - 1), tableID->nCols)];
@@ -1402,6 +1434,7 @@ double ModelicaTableAdditions_CombiTimeTable_getDerValue(void* _tableID, int iCo
                                 case MAKIMA_C1:
                                 case FRITSCH_BUTLAND_MONOTONE_C1:
                                 case STEFFEN_MONOTONE_C1:
+                                case CUBIC_C2:
                                     if (NULL != tableID->spline) {
                                         const double* c = tableID->spline[
                                             IDX(last, (size_t)(iCol - 1), tableID->nCols)];
@@ -1624,6 +1657,7 @@ double ModelicaTableAdditions_CombiTimeTable_getDer2Value(void* _tableID, int iC
                         case MAKIMA_C1:
                         case FRITSCH_BUTLAND_MONOTONE_C1:
                         case STEFFEN_MONOTONE_C1:
+                        case CUBIC_C2:
                             if (NULL != tableID->spline) {
                                 const double* c = tableID->spline[
                                     IDX(last, (size_t)(iCol - 1), tableID->nCols)];
@@ -1660,6 +1694,7 @@ double ModelicaTableAdditions_CombiTimeTable_getDer2Value(void* _tableID, int iC
                                 case MAKIMA_C1:
                                 case FRITSCH_BUTLAND_MONOTONE_C1:
                                 case STEFFEN_MONOTONE_C1:
+                                case CUBIC_C2:
                                     if (NULL != tableID->spline) {
                                         const double* c = tableID->spline[
                                             IDX(last, (size_t)(iCol - 1), tableID->nCols)];
@@ -1880,7 +1915,8 @@ double ModelicaTableAdditions_CombiTimeTable_nextTimeEvent(void* _tableID,
                 else if (tableID->smoothness == AKIMA_C1 ||
                     tableID->smoothness == MAKIMA_C1 ||
                     tableID->smoothness == FRITSCH_BUTLAND_MONOTONE_C1 ||
-                    tableID->smoothness == STEFFEN_MONOTONE_C1) {
+                    tableID->smoothness == STEFFEN_MONOTONE_C1 ||
+                    tableID->smoothness == CUBIC_C2) {
                     iStart = nRow - 1;
                     nextTimeEvent = tMax;
                     iEnd = 0;
@@ -2042,11 +2078,12 @@ double ModelicaTableAdditions_CombiTimeTable_read(void* _tableID, int force,
                 if (tableID->smoothness == AKIMA_C1 ||
                     tableID->smoothness == MAKIMA_C1 ||
                     tableID->smoothness == FRITSCH_BUTLAND_MONOTONE_C1 ||
-                    tableID->smoothness == STEFFEN_MONOTONE_C1) {
+                    tableID->smoothness == STEFFEN_MONOTONE_C1 ||
+                    tableID->smoothness == CUBIC_C2) {
                     tableID->smoothness = LINEAR_SEGMENTS;
                 }
             }
-            /* Reinitialization of the cubic Hermite spline coefficients */
+            /* Reinitialization of the cubic spline coefficients */
             if (tableID->smoothness == AKIMA_C1) {
                 spline1DClose(&tableID->spline);
                 tableID->spline = akimaSpline1DInit(
@@ -2071,10 +2108,17 @@ double ModelicaTableAdditions_CombiTimeTable_read(void* _tableID, int force,
                     (const double*)tableID->table, tableID->nRow,
                     tableID->nCol, (const int*)tableID->cols, tableID->nCols);
             }
+            else if (tableID->smoothness == CUBIC_C2) {
+                spline1DClose(&tableID->spline);
+                tableID->spline = cubicSpline1DInit(
+                    (const double*)tableID->table, tableID->nRow,
+                    tableID->nCol, (const int*)tableID->cols, tableID->nCols);
+            }
             if (tableID->smoothness == AKIMA_C1 ||
                 tableID->smoothness == MAKIMA_C1 ||
                 tableID->smoothness == FRITSCH_BUTLAND_MONOTONE_C1 ||
-                tableID->smoothness == STEFFEN_MONOTONE_C1) {
+                tableID->smoothness == STEFFEN_MONOTONE_C1 ||
+                tableID->smoothness == CUBIC_C2) {
                 if (NULL == tableID->spline) {
                     ModelicaError("Memory allocation error\n");
                     return 0.; /* Error */
@@ -2275,11 +2319,12 @@ void* ModelicaTableAdditions_CombiTable1D_init3(_In_z_ const char* fileName,
         if (tableID->smoothness == AKIMA_C1 ||
             tableID->smoothness == MAKIMA_C1 ||
             tableID->smoothness == FRITSCH_BUTLAND_MONOTONE_C1 ||
-            tableID->smoothness == STEFFEN_MONOTONE_C1) {
+            tableID->smoothness == STEFFEN_MONOTONE_C1 ||
+            tableID->smoothness == CUBIC_C2) {
             tableID->smoothness = LINEAR_SEGMENTS;
         }
     }
-    /* Initialization of the cubic Hermite spline coefficients */
+    /* Initialization of the cubic spline coefficients */
     if (tableID->smoothness == AKIMA_C1) {
         tableID->spline = akimaSpline1DInit(
             (const double*)tableID->table, tableID->nRow,
@@ -2300,10 +2345,16 @@ void* ModelicaTableAdditions_CombiTable1D_init3(_In_z_ const char* fileName,
             (const double*)tableID->table, tableID->nRow,
             tableID->nCol, (const int*)tableID->cols, tableID->nCols);
     }
+    else if (tableID->smoothness == CUBIC_C2) {
+        tableID->spline = cubicSpline1DInit(
+            (const double*)tableID->table, tableID->nRow,
+            tableID->nCol, (const int*)tableID->cols, tableID->nCols);
+    }
     if (tableID->smoothness == AKIMA_C1 ||
         tableID->smoothness == MAKIMA_C1 ||
         tableID->smoothness == FRITSCH_BUTLAND_MONOTONE_C1 ||
-        tableID->smoothness == STEFFEN_MONOTONE_C1) {
+        tableID->smoothness == STEFFEN_MONOTONE_C1 ||
+        tableID->smoothness == CUBIC_C2) {
         if (NULL == tableID->spline) {
             ModelicaTableAdditions_CombiTable1D_close(tableID);
             ModelicaError("Memory allocation error\n");
@@ -2433,6 +2484,7 @@ double ModelicaTableAdditions_CombiTable1D_getValue(void* _tableID, int iCol,
                     case MAKIMA_C1:
                     case FRITSCH_BUTLAND_MONOTONE_C1:
                     case STEFFEN_MONOTONE_C1:
+                    case CUBIC_C2:
                         if (NULL != tableID->spline) {
                             const double* c = tableID->spline[
                                 IDX(last, (size_t)(iCol - 1), tableID->nCols)];
@@ -2466,6 +2518,7 @@ double ModelicaTableAdditions_CombiTable1D_getValue(void* _tableID, int iCol,
                             case MAKIMA_C1:
                             case FRITSCH_BUTLAND_MONOTONE_C1:
                             case STEFFEN_MONOTONE_C1:
+                            case CUBIC_C2:
                                 if (NULL != tableID->spline) {
                                     const double* c = tableID->spline[
                                         IDX(last, (size_t)(iCol - 1), tableID->nCols)];
@@ -2576,6 +2629,7 @@ double ModelicaTableAdditions_CombiTable1D_getDerValue(void* _tableID, int iCol,
                     case MAKIMA_C1:
                     case FRITSCH_BUTLAND_MONOTONE_C1:
                     case STEFFEN_MONOTONE_C1:
+                    case CUBIC_C2:
                         if (NULL != tableID->spline) {
                             const double* c = tableID->spline[
                                 IDX(last, (size_t)(iCol - 1), tableID->nCols)];
@@ -2608,6 +2662,7 @@ double ModelicaTableAdditions_CombiTable1D_getDerValue(void* _tableID, int iCol,
                             case MAKIMA_C1:
                             case FRITSCH_BUTLAND_MONOTONE_C1:
                             case STEFFEN_MONOTONE_C1:
+                            case CUBIC_C2:
                                 if (NULL != tableID->spline) {
                                     const double* c = tableID->spline[
                                         IDX(last, (size_t)(iCol - 1), tableID->nCols)];
@@ -2718,6 +2773,7 @@ double ModelicaTableAdditions_CombiTable1D_getDer2Value(void* _tableID, int iCol
                     case MAKIMA_C1:
                     case FRITSCH_BUTLAND_MONOTONE_C1:
                     case STEFFEN_MONOTONE_C1:
+                    case CUBIC_C2:
                         if (NULL != tableID->spline) {
                             const double* c = tableID->spline[
                                 IDX(last, (size_t)(iCol - 1), tableID->nCols)];
@@ -2751,6 +2807,7 @@ double ModelicaTableAdditions_CombiTable1D_getDer2Value(void* _tableID, int iCol
                             case MAKIMA_C1:
                             case FRITSCH_BUTLAND_MONOTONE_C1:
                             case STEFFEN_MONOTONE_C1:
+                            case CUBIC_C2:
                                 if (NULL != tableID->spline) {
                                     const double* c = tableID->spline[
                                         IDX(last, (size_t)(iCol - 1), tableID->nCols)];
@@ -2854,11 +2911,12 @@ double ModelicaTableAdditions_CombiTable1D_read(void* _tableID, int force,
                 if (tableID->smoothness == AKIMA_C1 ||
                     tableID->smoothness == MAKIMA_C1 ||
                     tableID->smoothness == FRITSCH_BUTLAND_MONOTONE_C1 ||
-                    tableID->smoothness == STEFFEN_MONOTONE_C1) {
+                    tableID->smoothness == STEFFEN_MONOTONE_C1 ||
+                    tableID->smoothness == CUBIC_C2) {
                     tableID->smoothness = LINEAR_SEGMENTS;
                 }
             }
-            /* Reinitialization of the cubic Hermite spline coefficients */
+            /* Reinitialization of the cubic spline coefficients */
             if (tableID->smoothness == AKIMA_C1) {
                 spline1DClose(&tableID->spline);
                 tableID->spline = akimaSpline1DInit(
@@ -2883,10 +2941,17 @@ double ModelicaTableAdditions_CombiTable1D_read(void* _tableID, int force,
                     (const double*)tableID->table, tableID->nRow,
                     tableID->nCol, (const int*)tableID->cols, tableID->nCols);
             }
+            else if (tableID->smoothness == CUBIC_C2) {
+                spline1DClose(&tableID->spline);
+                tableID->spline = cubicSpline1DInit(
+                    (const double*)tableID->table, tableID->nRow,
+                    tableID->nCol, (const int*)tableID->cols, tableID->nCols);
+            }
             if (tableID->smoothness == AKIMA_C1 ||
                 tableID->smoothness == MAKIMA_C1 ||
                 tableID->smoothness == FRITSCH_BUTLAND_MONOTONE_C1 ||
-                tableID->smoothness == STEFFEN_MONOTONE_C1) {
+                tableID->smoothness == STEFFEN_MONOTONE_C1 ||
+                tableID->smoothness == CUBIC_C2) {
                 if (NULL == tableID->spline) {
                     ModelicaError("Memory allocation error\n");
                     return 0.; /* Error */
@@ -3066,9 +3131,18 @@ void* ModelicaTableAdditions_CombiTable2D_init3(_In_z_ const char* fileName,
         tableID->nRow <= 3 && tableID->nCol <= 3) {
         tableID->smoothness = LINEAR_SEGMENTS;
     }
-    /* Initialization of the Akima-spline coefficients */
+    /* Initialization of the cubic spline coefficients */
     if (tableID->smoothness == AKIMA_C1) {
-        tableID->spline = spline2DInit((const double*)tableID->table,
+        tableID->spline = akimaSpline2DInit((const double*)tableID->table,
+            tableID->nRow, tableID->nCol);
+        if (NULL == tableID->spline) {
+            ModelicaTableAdditions_CombiTable2D_close(tableID);
+            ModelicaError("Memory allocation error\n");
+            return NULL;
+        }
+    }
+    else if (tableID->smoothness == CUBIC_C2) {
+        tableID->spline = cubicSpline2DInit((const double*)tableID->table,
             tableID->nRow, tableID->nCol);
         if (NULL == tableID->spline) {
             ModelicaTableAdditions_CombiTable2D_close(tableID);
@@ -3197,6 +3271,7 @@ double ModelicaTableAdditions_CombiTable2D_getValue(void* _tableID, double u1,
                             break;
 
                         case AKIMA_C1:
+                        case CUBIC_C2:
                             if (NULL != tableID->spline) {
                                 const double* c = tableID->spline[last2];
                                 const double v = u2 - TABLE_ROW0(last2 + 1);
@@ -3237,6 +3312,7 @@ double ModelicaTableAdditions_CombiTable2D_getValue(void* _tableID, double u1,
                                 }
 
                                 case AKIMA_C1:
+                                case CUBIC_C2:
                                     if (NULL != tableID->spline) {
                                         const double* c = tableID->spline[last2];
                                         if (extrapolate2 == LEFT) {
@@ -3348,6 +3424,7 @@ double ModelicaTableAdditions_CombiTable2D_getValue(void* _tableID, double u1,
                             break;
 
                         case AKIMA_C1:
+                        case CUBIC_C2:
                             if (NULL != tableID->spline) {
                                 const double* c = tableID->spline[last1];
                                 const double v = u1 - TABLE_COL0(last1 + 1);
@@ -3388,6 +3465,7 @@ double ModelicaTableAdditions_CombiTable2D_getValue(void* _tableID, double u1,
                                 }
 
                                 case AKIMA_C1:
+                                case CUBIC_C2:
                                     if (NULL != tableID->spline) {
                                         const double* c = tableID->spline[last1];
                                         if (extrapolate1 == LEFT) {
@@ -3497,6 +3575,7 @@ double ModelicaTableAdditions_CombiTable2D_getValue(void* _tableID, double u1,
                                 break;
 
                             case AKIMA_C1:
+                            case CUBIC_C2:
                                 if (NULL != tableID->spline) {
                                     const double* c = tableID->spline[
                                         IDX(last1, last2, nCol - 2)];
@@ -3538,6 +3617,7 @@ double ModelicaTableAdditions_CombiTable2D_getValue(void* _tableID, double u1,
                                         break;
 
                                     case AKIMA_C1:
+                                    case CUBIC_C2:
                                         if (NULL != tableID->spline) {
                                             const double* c = tableID->spline[
                                                 IDX(last1, 0, nCol - 2)];
@@ -3586,6 +3666,7 @@ double ModelicaTableAdditions_CombiTable2D_getValue(void* _tableID, double u1,
                                         break;
 
                                     case AKIMA_C1:
+                                    case CUBIC_C2:
                                         if (NULL != tableID->spline) {
                                             const double* c = tableID->spline[
                                                 IDX(last1, 0, nCol - 2)];
@@ -3637,6 +3718,7 @@ double ModelicaTableAdditions_CombiTable2D_getValue(void* _tableID, double u1,
                                         break;
 
                                     case AKIMA_C1:
+                                    case CUBIC_C2:
                                         if (NULL != tableID->spline) {
                                             const double* c = tableID->spline[
                                                 IDX(last1, nCol - 3, nCol - 2)];
@@ -3696,6 +3778,7 @@ double ModelicaTableAdditions_CombiTable2D_getValue(void* _tableID, double u1,
                                         break;
 
                                     case AKIMA_C1:
+                                    case CUBIC_C2:
                                         if (NULL != tableID->spline) {
                                             const double* c = tableID->spline[
                                                 IDX(last1, nCol - 3, nCol - 2)];
@@ -3755,6 +3838,7 @@ double ModelicaTableAdditions_CombiTable2D_getValue(void* _tableID, double u1,
                                         break;
 
                                     case AKIMA_C1:
+                                    case CUBIC_C2:
                                         if (NULL != tableID->spline) {
                                             const double* c = tableID->spline[
                                                 IDX(0, last2, nCol - 2)];
@@ -3803,6 +3887,7 @@ double ModelicaTableAdditions_CombiTable2D_getValue(void* _tableID, double u1,
                                         break;
 
                                     case AKIMA_C1:
+                                    case CUBIC_C2:
                                         if (NULL != tableID->spline) {
                                             const double* c = tableID->spline[
                                                 IDX(0, last2, nCol - 2)];
@@ -3854,6 +3939,7 @@ double ModelicaTableAdditions_CombiTable2D_getValue(void* _tableID, double u1,
                                         break;
 
                                     case AKIMA_C1:
+                                    case CUBIC_C2:
                                         if (NULL != tableID->spline) {
                                             const double* c = tableID->spline[
                                                 IDX(0, 0, nCol - 2)];
@@ -3913,6 +3999,7 @@ double ModelicaTableAdditions_CombiTable2D_getValue(void* _tableID, double u1,
                                         break;
 
                                     case AKIMA_C1:
+                                    case CUBIC_C2:
                                         if (NULL != tableID->spline) {
                                             const double* c = tableID->spline[
                                                 IDX(0, nCol - 3, nCol - 2)];
@@ -3979,6 +4066,7 @@ double ModelicaTableAdditions_CombiTable2D_getValue(void* _tableID, double u1,
                                         break;
 
                                     case AKIMA_C1:
+                                    case CUBIC_C2:
                                         if (NULL != tableID->spline) {
                                             const double* c = tableID->spline[
                                                 IDX(nRow - 3, last2, nCol - 2)];
@@ -4033,6 +4121,7 @@ double ModelicaTableAdditions_CombiTable2D_getValue(void* _tableID, double u1,
                                         break;
 
                                     case AKIMA_C1:
+                                    case CUBIC_C2:
                                         if (NULL != tableID->spline) {
                                             const double* c = tableID->spline[
                                                 IDX(nRow - 3, last2, nCol - 2)];
@@ -4090,6 +4179,7 @@ double ModelicaTableAdditions_CombiTable2D_getValue(void* _tableID, double u1,
                                         break;
 
                                     case AKIMA_C1:
+                                    case CUBIC_C2:
                                         if (NULL != tableID->spline) {
                                             const double* c = tableID->spline[
                                                 IDX(nRow - 3 , 0, nCol - 2)];
@@ -4154,6 +4244,7 @@ double ModelicaTableAdditions_CombiTable2D_getValue(void* _tableID, double u1,
                                         break;
 
                                     case AKIMA_C1:
+                                    case CUBIC_C2:
                                         if (NULL != tableID->spline) {
                                             const double* c = tableID->spline[
                                                 IDX(nRow - 3, nCol - 3, nCol - 2)];
@@ -4288,6 +4379,7 @@ double ModelicaTableAdditions_CombiTable2D_getDerValue(void* _tableID, double u1
                             break;
 
                         case AKIMA_C1:
+                        case CUBIC_C2:
                             if (NULL != tableID->spline) {
                                 const double* c = tableID->spline[last2];
                                 const double u20 = TABLE_ROW0(last2 + 1);
@@ -4326,6 +4418,7 @@ double ModelicaTableAdditions_CombiTable2D_getDerValue(void* _tableID, double u1
                                     break;
 
                                 case AKIMA_C1:
+                                case CUBIC_C2:
                                     if (NULL != tableID->spline) {
                                         const double* c = tableID->spline[last2];
                                         if (extrapolate2 == LEFT) {
@@ -4433,6 +4526,7 @@ double ModelicaTableAdditions_CombiTable2D_getDerValue(void* _tableID, double u1
                             break;
 
                         case AKIMA_C1:
+                        case CUBIC_C2:
                             if (NULL != tableID->spline) {
                                 const double* c = tableID->spline[last1];
                                 const double u10 = TABLE_COL0(last1 + 1);
@@ -4471,6 +4565,7 @@ double ModelicaTableAdditions_CombiTable2D_getDerValue(void* _tableID, double u1
                                     break;
 
                                 case AKIMA_C1:
+                                case CUBIC_C2:
                                     if (NULL != tableID->spline) {
                                         const double* c = tableID->spline[last1];
                                         if (extrapolate1 == LEFT) {
@@ -4576,6 +4671,7 @@ double ModelicaTableAdditions_CombiTable2D_getDerValue(void* _tableID, double u1
                                 break;
 
                             case AKIMA_C1:
+                            case CUBIC_C2:
                                 if (NULL != tableID->spline) {
                                     const double* c = tableID->spline[
                                         IDX(last1, last2, nCol - 2)];
@@ -4623,6 +4719,7 @@ double ModelicaTableAdditions_CombiTable2D_getDerValue(void* _tableID, double u1
                                         break;
 
                                     case AKIMA_C1:
+                                    case CUBIC_C2:
                                         if (NULL != tableID->spline) {
                                             const double* c = tableID->spline[
                                                 IDX(last1, 0, nCol - 2)];
@@ -4684,6 +4781,7 @@ double ModelicaTableAdditions_CombiTable2D_getDerValue(void* _tableID, double u1
                                         break;
 
                                     case AKIMA_C1:
+                                    case CUBIC_C2:
                                         if (NULL != tableID->spline) {
                                             const double* c = tableID->spline[
                                                 IDX(last1, nCol - 3, nCol - 2)];
@@ -4757,6 +4855,7 @@ double ModelicaTableAdditions_CombiTable2D_getDerValue(void* _tableID, double u1
                                         break;
 
                                     case AKIMA_C1:
+                                    case CUBIC_C2:
                                         if (NULL != tableID->spline) {
                                             const double* c = tableID->spline[
                                                 IDX(0, last2, nCol - 2)];
@@ -4818,6 +4917,7 @@ double ModelicaTableAdditions_CombiTable2D_getDerValue(void* _tableID, double u1
                                         break;
 
                                     case AKIMA_C1:
+                                    case CUBIC_C2:
                                         if (NULL != tableID->spline) {
                                             const double* c = tableID->spline[
                                                 IDX(0, 0, nCol - 2)];
@@ -4876,6 +4976,7 @@ double ModelicaTableAdditions_CombiTable2D_getDerValue(void* _tableID, double u1
                                         break;
 
                                     case AKIMA_C1:
+                                    case CUBIC_C2:
                                         if (NULL != tableID->spline) {
                                             const double* c = tableID->spline[
                                                 IDX(0, nCol - 3, nCol - 2)];
@@ -4941,6 +5042,7 @@ double ModelicaTableAdditions_CombiTable2D_getDerValue(void* _tableID, double u1
                                         break;
 
                                     case AKIMA_C1:
+                                    case CUBIC_C2:
                                         if (NULL != tableID->spline) {
                                             const double* c = tableID->spline[
                                                 IDX(nRow - 3, last2, nCol - 2)];
@@ -5012,6 +5114,7 @@ double ModelicaTableAdditions_CombiTable2D_getDerValue(void* _tableID, double u1
                                         break;
 
                                     case AKIMA_C1:
+                                    case CUBIC_C2:
                                         if (NULL != tableID->spline) {
                                             const double* c = tableID->spline[
                                                 IDX(nRow - 3, 0, nCol - 2)];
@@ -5075,6 +5178,7 @@ double ModelicaTableAdditions_CombiTable2D_getDerValue(void* _tableID, double u1
                                         break;
 
                                     case AKIMA_C1:
+                                    case CUBIC_C2:
                                         if (NULL != tableID->spline) {
                                             const double* c = tableID->spline[
                                                 IDX(nRow - 3, nCol - 3, nCol - 2)];
@@ -5209,6 +5313,7 @@ double ModelicaTableAdditions_CombiTable2D_getDer2Value(void* _tableID, double u
                             break;
 
                         case AKIMA_C1:
+                        case CUBIC_C2:
                             if (NULL != tableID->spline) {
                                 const double* c = tableID->spline[last2];
                                 const double u20 = TABLE_ROW0(last2 + 1);
@@ -5248,6 +5353,7 @@ double ModelicaTableAdditions_CombiTable2D_getDer2Value(void* _tableID, double u
                                     break;
 
                                 case AKIMA_C1:
+                                case CUBIC_C2:
                                     if (NULL != tableID->spline) {
                                         const double* c = tableID->spline[last2];
                                         if (extrapolate2 == LEFT) {
@@ -5355,6 +5461,7 @@ double ModelicaTableAdditions_CombiTable2D_getDer2Value(void* _tableID, double u
                             break;
 
                         case AKIMA_C1:
+                        case CUBIC_C2:
                             if (NULL != tableID->spline) {
                                 const double* c = tableID->spline[last1];
                                 const double u10 = TABLE_COL0(last1 + 1);
@@ -5394,6 +5501,7 @@ double ModelicaTableAdditions_CombiTable2D_getDer2Value(void* _tableID, double u
                                     break;
 
                                 case AKIMA_C1:
+                                case CUBIC_C2:
                                     if (NULL != tableID->spline) {
                                         const double* c = tableID->spline[last1];
                                         if (extrapolate1 == LEFT) {
@@ -5499,6 +5607,7 @@ double ModelicaTableAdditions_CombiTable2D_getDer2Value(void* _tableID, double u
                                 break;
 
                             case AKIMA_C1:
+                            case CUBIC_C2:
                                 if (NULL != tableID->spline) {
                                     const double* c = tableID->spline[
                                         IDX(last1, last2, nCol - 2)];
@@ -5555,6 +5664,7 @@ double ModelicaTableAdditions_CombiTable2D_getDer2Value(void* _tableID, double u
                                         break;
 
                                     case AKIMA_C1:
+                                    case CUBIC_C2:
                                         if (NULL != tableID->spline) {
                                             const double* c = tableID->spline[
                                                 IDX(last1, 0, nCol - 2)];
@@ -5619,6 +5729,7 @@ double ModelicaTableAdditions_CombiTable2D_getDer2Value(void* _tableID, double u
                                         break;
 
                                     case AKIMA_C1:
+                                    case CUBIC_C2:
                                         if (NULL != tableID->spline) {
                                             const double* c = tableID->spline[
                                                 IDX(last1, nCol - 3, nCol - 2)];
@@ -5694,6 +5805,7 @@ double ModelicaTableAdditions_CombiTable2D_getDer2Value(void* _tableID, double u
                                         break;
 
                                     case AKIMA_C1:
+                                    case CUBIC_C2:
                                         if (NULL != tableID->spline) {
                                             const double* c = tableID->spline[
                                                 IDX(0, last2, nCol - 2)];
@@ -5757,6 +5869,7 @@ double ModelicaTableAdditions_CombiTable2D_getDer2Value(void* _tableID, double u
                                         break;
 
                                     case AKIMA_C1:
+                                    case CUBIC_C2:
                                         if (NULL != tableID->spline) {
                                             const double* c = tableID->spline[
                                                 IDX(0, 0, nCol - 2)];
@@ -5816,6 +5929,7 @@ double ModelicaTableAdditions_CombiTable2D_getDer2Value(void* _tableID, double u
                                         break;
 
                                     case AKIMA_C1:
+                                    case CUBIC_C2:
                                         if (NULL != tableID->spline) {
                                             const double* c = tableID->spline[
                                                 IDX(0, nCol - 3, nCol - 2)];
@@ -5882,6 +5996,7 @@ double ModelicaTableAdditions_CombiTable2D_getDer2Value(void* _tableID, double u
                                         break;
 
                                     case AKIMA_C1:
+                                    case CUBIC_C2:
                                         if (NULL != tableID->spline) {
                                             const double* c = tableID->spline[
                                                 IDX(nRow - 3, last2, nCol - 2)];
@@ -5960,6 +6075,7 @@ double ModelicaTableAdditions_CombiTable2D_getDer2Value(void* _tableID, double u
                                         break;
 
                                     case AKIMA_C1:
+                                    case CUBIC_C2:
                                         if (NULL != tableID->spline) {
                                             const double* c = tableID->spline[
                                                 IDX(nRow - 3, 0, nCol - 2)];
@@ -6024,6 +6140,7 @@ double ModelicaTableAdditions_CombiTable2D_getDer2Value(void* _tableID, double u
                                         break;
 
                                     case AKIMA_C1:
+                                    case CUBIC_C2:
                                         if (NULL != tableID->spline) {
                                             const double* c = tableID->spline[
                                                 IDX(nRow - 3, nCol - 3, nCol - 2)];
@@ -6156,14 +6273,23 @@ double ModelicaTableAdditions_CombiTable2D_read(void* _tableID, int force,
             if (isValidCombiTable2D(tableID, tableName, NO_CLEANUP) == 0) {
                 return 0.; /* Error */
             }
-            if (tableID->smoothness == AKIMA_C1 &&
+            if ((tableID->smoothness == AKIMA_C1 || tableID->smoothness == CUBIC_C2) &&
                 tableID->nRow <= 3 && tableID->nCol <= 3) {
                 tableID->smoothness = LINEAR_SEGMENTS;
             }
-            /* Reinitialization of the Akima-spline coefficients */
+            /* Reinitialization of the cubic spline coefficients */
             if (tableID->smoothness == AKIMA_C1) {
                 spline2DClose(&tableID->spline);
-                tableID->spline = spline2DInit((const double*)tableID->table,
+                tableID->spline = akimaSpline2DInit((const double*)tableID->table,
+                    tableID->nRow,tableID->nCol);
+                if (NULL == tableID->spline) {
+                    ModelicaError("Memory allocation error\n");
+                    return 0.; /* Error */
+                }
+            }
+            else if (tableID->smoothness == CUBIC_C2) {
+                spline2DClose(&tableID->spline);
+                tableID->spline = cubicSpline2DInit((const double*)tableID->table,
                     tableID->nRow,tableID->nCol);
                 if (NULL == tableID->spline) {
                     ModelicaError("Memory allocation error\n");
@@ -6336,7 +6462,8 @@ static int isValidCombiTimeTable(CombiTimeTable* tableID,
             if (tableID->smoothness == AKIMA_C1 ||
                 tableID->smoothness == MAKIMA_C1 ||
                 tableID->smoothness == FRITSCH_BUTLAND_MONOTONE_C1 ||
-                tableID->smoothness == STEFFEN_MONOTONE_C1) {
+                tableID->smoothness == STEFFEN_MONOTONE_C1 ||
+                tableID->smoothness == CUBIC_C2) {
                 size_t i;
                 for (i = 0; i < nRow - 1; i++) {
                     double t0 = TABLE_COL0(i);
@@ -6551,7 +6678,7 @@ static enum TableSource getTableSource(_In_z_ const char* fileName,
 
 /* ----- Internal univariate spline functions ---- */
 
-static CubicHermite1D* akimaSpline1DInit(_In_ const double* table, size_t nRow,
+static CubicSpline1D* akimaSpline1DInit(_In_ const double* table, size_t nRow,
                                          size_t nCol, _In_ const int* cols,
                                          size_t nCols) {
   /* Reference:
@@ -6561,12 +6688,12 @@ static CubicHermite1D* akimaSpline1DInit(_In_ const double* table, size_t nRow,
      (https://dx.doi.org/10.1145/321607.321609)
   */
 
-    CubicHermite1D* spline;
+    CubicSpline1D* spline;
     double* d; /* Divided differences */
     size_t col;
 
     /* Actually there is no need for consecutive memory */
-    spline = (CubicHermite1D*)malloc((nRow - 1)*nCols*sizeof(CubicHermite1D));
+    spline = (CubicSpline1D*)malloc((nRow - 1)*nCols*sizeof(CubicSpline1D));
     if (NULL == spline) {
         return NULL;
     }
@@ -6629,7 +6756,7 @@ static CubicHermite1D* akimaSpline1DInit(_In_ const double* table, size_t nRow,
     return spline;
 }
 
-static CubicHermite1D* makimaSpline1DInit(_In_ const double* table, size_t nRow,
+static CubicSpline1D* makimaSpline1DInit(_In_ const double* table, size_t nRow,
                                          size_t nCol, _In_ const int* cols,
                                          size_t nCols) {
   /* Reference:
@@ -6639,12 +6766,12 @@ static CubicHermite1D* makimaSpline1DInit(_In_ const double* table, size_t nRow,
      (https://blogs.mathworks.com/cleve/?p=4707)
   */
 
-    CubicHermite1D* spline;
+    CubicSpline1D* spline;
     double* d; /* Divided differences */
     size_t col;
 
     /* Actually there is no need for consecutive memory */
-    spline = (CubicHermite1D*)malloc((nRow - 1)*nCols*sizeof(CubicHermite1D));
+    spline = (CubicSpline1D*)malloc((nRow - 1)*nCols*sizeof(CubicSpline1D));
     if (NULL == spline) {
         return NULL;
     }
@@ -6709,7 +6836,7 @@ static CubicHermite1D* makimaSpline1DInit(_In_ const double* table, size_t nRow,
     return spline;
 }
 
-static CubicHermite1D* fritschButlandSpline1DInit(_In_ const double* table,
+static CubicSpline1D* fritschButlandSpline1DInit(_In_ const double* table,
                                                   size_t nRow, size_t nCol,
                                                   _In_ const int* cols,
                                                   size_t nCols) {
@@ -6721,12 +6848,12 @@ static CubicHermite1D* fritschButlandSpline1DInit(_In_ const double* table,
      (https://dx.doi.org/10.1137/0905021)
   */
 
-    CubicHermite1D* spline;
+    CubicSpline1D* spline;
     double* d; /* Divided differences */
     size_t col;
 
     /* Actually there is no need for consecutive memory */
-    spline = (CubicHermite1D*)malloc((nRow - 1)*nCols*sizeof(CubicHermite1D));
+    spline = (CubicSpline1D*)malloc((nRow - 1)*nCols*sizeof(CubicSpline1D));
     if (NULL == spline) {
         return NULL;
     }
@@ -6779,7 +6906,7 @@ static CubicHermite1D* fritschButlandSpline1DInit(_In_ const double* table,
     return spline;
 }
 
-static CubicHermite1D* steffenSpline1DInit(_In_ const double* table,
+static CubicSpline1D* steffenSpline1DInit(_In_ const double* table,
                                            size_t nRow, size_t nCol,
                                            _In_ const int* cols,
                                            size_t nCols) {
@@ -6790,12 +6917,12 @@ static CubicHermite1D* steffenSpline1DInit(_In_ const double* table,
      (https://ui.adsabs.harvard.edu/#abs/1990A&A...239..443S)
   */
 
-    CubicHermite1D* spline;
+    CubicSpline1D* spline;
     double* d; /* Divided differences */
     size_t col;
 
     /* Actually there is no need for consecutive memory */
-    spline = (CubicHermite1D*)malloc((nRow - 1)*nCols*sizeof(CubicHermite1D));
+    spline = (CubicSpline1D*)malloc((nRow - 1)*nCols*sizeof(CubicSpline1D));
     if (NULL == spline) {
         return NULL;
     }
@@ -6856,7 +6983,121 @@ static CubicHermite1D* steffenSpline1DInit(_In_ const double* table,
     return spline;
 }
 
-static void spline1DClose(CubicHermite1D** spline) {
+static CubicSpline1D* cubicSpline1DInit(_In_ const double* table,
+                                         size_t nRow, size_t nCol,
+                                         _In_ const int* cols,
+                                         size_t nCols) {
+  /* Reference:
+
+     Richard L. Burden, J. Douglas Faires. Numerical Analysis, 10th edition, 2015.
+  */
+
+    CubicSpline1D* spline;
+    double* d; /* Divided differences */
+    double* h; /* Abscissa differences */
+    double* l;
+    double* u;
+    double* z;
+    size_t col;
+    size_t i;
+
+    /* Actually there is no need for consecutive memory */
+    spline = (CubicSpline1D*)malloc((nRow - 1)*nCols*sizeof(CubicSpline1D));
+    if (NULL == spline) {
+        return NULL;
+    }
+
+    d = (double*)malloc((nRow - 1)*sizeof(double));
+    if (NULL == d) {
+        free(spline);
+        return NULL;
+    }
+
+    h = (double*)malloc((nRow - 1)*sizeof(double));
+    if (NULL == h) {
+        free(d);
+        free(spline);
+        return NULL;
+    }
+
+    l = (double*)malloc((nRow - 1)*sizeof(double));
+    if (NULL == l) {
+        free(h);
+        free(d);
+        free(spline);
+        return NULL;
+    }
+
+    u = (double*)malloc((nRow - 1)*sizeof(double));
+    if (NULL == u) {
+        free(l);
+        free(h);
+        free(d);
+        free(spline);
+        return NULL;
+    }
+
+    z = (double*)malloc((nRow - 1)*sizeof(double));
+    if (NULL == z) {
+        free(u);
+        free(l);
+        free(h);
+        free(d);
+        free(spline);
+        return NULL;
+    }
+
+    h[0] = TABLE_COL0(1) - TABLE_COL0(0);
+    l[0] = 1;
+    u[0] = 0;
+    for (i = 1; i < nRow - 1; i++) {
+        h[i] = TABLE_COL0(i + 1) - TABLE_COL0(i);
+        l[i] = 2*(TABLE_COL0(i + 1) - TABLE_COL0(i - 1)) - h[i - 1]*u[i - 1];
+        u[i] = h[i]/l[i];
+    }
+
+    for (col = 0; col < nCols; col++) {
+        /* Calculation of the divided differences */
+        for (i = 0; i < nRow - 1; i++) {
+            size_t c = (size_t)(cols[col] - 1);
+            d[i] = (TABLE(i + 1, c) - TABLE(i, c))/h[i];
+        }
+
+        z[0] = 0;
+        for (i = 1; i < nRow - 1; i++) {
+            z[i] = (3*(d[i] - d[i - 1]) - h[i - 1]*z[i - 1])/l[i];
+        }
+
+        /* Calculation of the 3(4) coefficients per interval */
+        {
+            double* c = spline[IDX(nRow - 2, col, nCols)];
+            c[1] = z[nRow - 2];
+            c[2] = d[nRow - 2] - 2*h[nRow - 2]*c[1]/3.;
+            c[0] = -c[1]/h[nRow - 2]/3.;
+            /* No need to store the absolute term y0 */
+            /* c[3] = TABLE(nRow - 2, cols[col] - 1); */
+        }
+
+        for (i = nRow - 2; i > 0; i--) {
+            double* cr = spline[IDX(i, col, nCols)];
+            double* c = spline[IDX(i - 1, col, nCols)];
+            c[1] = z[i - 1] - u[i - 1]*cr[1];
+            c[2] = d[i - 1] - h[i - 1]*(cr[1] + 2*c[1])/3.;
+            c[0] = (cr[1] - c[1])/h[i - 1]/3.;
+            /* No need to store the absolute term y0 */
+            /* c[3] = TABLE(i - 1, cols[col] - 1); */
+        }
+    }
+
+    free(z);
+    free(u);
+    free(l);
+    free(h);
+    free(d);
+    return spline;
+}
+
+static void spline1DClose(CubicSpline1D** spline) {
     if (NULL != spline && NULL != *spline) {
         free(*spline);
         *spline = NULL;
@@ -6905,8 +7146,8 @@ static void spline1DExtrapolateRight(double x1, double x2, double x3, double x4,
     }
 }
 
-static CubicHermite2D* spline2DInit(_In_ const double* table, size_t nRow,
-                                    size_t nCol) {
+static CubicSpline2D* akimaSpline2DInit(_In_ const double* table, size_t nRow,
+                                        size_t nCol) {
   /* Reference:
 
      Hiroshi Akima. A method of bivariate interpolation and smooth surface
@@ -6915,9 +7156,9 @@ static CubicHermite2D* spline2DInit(_In_ const double* table, size_t nRow,
   */
 
 #define TABLE_EX(i, j) tableEx[IDX(i, j, nCol + 3)]
-    CubicHermite2D* spline = NULL;
+    CubicSpline2D* spline = NULL;
     if (nRow == 2 /* && nCol > 3 */) {
-        CubicHermite1D* spline1D;
+        CubicSpline1D* spline1D;
         size_t j;
         int cols = 2;
 
@@ -6927,7 +7168,7 @@ static CubicHermite2D* spline2DInit(_In_ const double* table, size_t nRow,
             return NULL;
         }
 
-        spline = (CubicHermite2D*)malloc((nCol - 2)*sizeof(CubicHermite2D));
+        spline = (CubicSpline2D*)malloc((nCol - 2)*sizeof(CubicSpline2D));
         if (NULL == spline) {
             free(tableT);
             return NULL;
@@ -6955,11 +7196,11 @@ static CubicHermite2D* spline2DInit(_In_ const double* table, size_t nRow,
         spline1DClose(&spline1D);
     }
     else if (/*nRow > 3 && */ nCol == 2) {
-        CubicHermite1D* spline1D;
+        CubicSpline1D* spline1D;
         size_t i;
         int cols = 2;
 
-        spline = (CubicHermite2D*)malloc((nRow - 2)*sizeof(CubicHermite2D));
+        spline = (CubicSpline2D*)malloc((nRow - 2)*sizeof(CubicSpline2D));
         if (NULL == spline) {
             return NULL;
         }
@@ -7206,7 +7447,7 @@ static CubicHermite2D* spline2DInit(_In_ const double* table, size_t nRow,
         free(x);
 
         /* Actually there is no need for consecutive memory */
-        spline = (CubicHermite2D*)malloc((nRow - 2)*(nCol - 2)*sizeof(CubicHermite2D));
+        spline = (CubicSpline2D*)malloc((nRow - 2)*(nCol - 2)*sizeof(CubicSpline2D));
         if (NULL == spline) {
             free(dz_dx);
             free(dz_dy);
@@ -7290,7 +7531,286 @@ static CubicHermite2D* spline2DInit(_In_ const double* table, size_t nRow,
 #undef TABLE_EX
 }
 
-static void spline2DClose(CubicHermite2D** spline) {
+static CubicSpline2D* cubicSpline2DInit(_In_ const double* table, size_t nRow,
+                                        size_t nCol) {
+    CubicSpline2D* spline = NULL;
+    if (nRow == 2 /* && nCol > 3 */) {
+        CubicSpline1D* spline1D;
+        size_t j;
+        const int cols = 2;
+
+        /* Need to transpose */
+        double* tableT = (double*)malloc(2*(nCol - 1)*sizeof(double));
+        if (NULL == tableT) {
+            return NULL;
+        }
+
+        spline = (CubicSpline2D*)malloc((nCol - 1)*sizeof(CubicSpline2D));
+        if (NULL == spline) {
+            free(tableT);
+            return NULL;
+        }
+
+        for (j = 1; j < nCol; j++) {
+            tableT[IDX(j - 1, 0, 2)] = TABLE_ROW0(j);
+            tableT[IDX(j - 1, 1, 2)] = TABLE(1, j);
+        }
+
+        spline1D = cubicSpline1DInit(tableT, nCol - 1, 2, &cols, 1);
+        free(tableT);
+        if (NULL == spline1D) {
+            free(spline);
+            return NULL;
+        }
+        /* Copy coefficients */
+        for (j = 0; j < nCol - 1; j++) {
+            const double* c1 = spline1D[j];
+            double* c2 = spline[j];
+            c2[0] = c1[0];
+            c2[1] = c1[1];
+            c2[2] = c1[2];
+        }
+        spline1DClose(&spline1D);
+    }
+    else if (/*nRow > 3 && */ nCol == 2) {
+        CubicSpline1D* spline1D;
+        size_t i;
+        const int cols = 2;
+
+        spline = (CubicSpline2D*)malloc((nRow - 1)*sizeof(CubicSpline2D));
+        if (NULL == spline) {
+            return NULL;
+        }
+
+        spline1D = cubicSpline1DInit(&table[2], nRow - 1, 2, &cols, 1);
+        if (NULL == spline1D) {
+            free(spline);
+            return NULL;
+        }
+        /* Copy coefficients */
+        for (i = 0; i < nRow - 1; i++) {
+            const double* c1 = spline1D[i];
+            double* c2 = spline[i];
+            c2[0] = c1[0];
+            c2[1] = c1[1];
+            c2[2] = c1[2];
+        }
+        spline1DClose(&spline1D);
+    }
+    else /* if (nRow > 2 && nCol > 2) */ {
+        size_t i, j;
+        double* table2x;
+        double* table2y;
+        double* dz_dx;
+        double* dz_dy;
+        double* d2z_dxdy;
+        const int cols = 2;
+
+        dz_dx = (double*)malloc((nRow - 1)*(nCol - 1)*sizeof(double));
+        if (NULL == dz_dx) {
+            return NULL;
+        }
+
+        dz_dy = (double*)malloc((nRow - 1)*(nCol - 1)*sizeof(double));
+        if (NULL == dz_dy) {
+            free(dz_dx);
+            return NULL;
+        }
+
+        d2z_dxdy = (double*)malloc((nRow - 1)*(nCol - 1)*sizeof(double));
+        if (NULL == d2z_dxdy) {
+            free(dz_dy);
+            free(dz_dx);
+            return NULL;
+        }
+
+        table2x = (double*)malloc(2 * (nRow - 1) * sizeof(double));
+        if (NULL == table2x) {
+            free(d2z_dxdy);
+            free(dz_dy);
+            free(dz_dx);
+            return NULL;
+        }
+
+        table2y = (double*)malloc(2 * (nCol - 1) * sizeof(double));
+        if (NULL == table2y) {
+            free(table2x);
+            free(d2z_dxdy);
+            free(dz_dy);
+            free(dz_dx);
+            return NULL;
+        }
+
+        /* Calculation of the partial derivatives */
+        for (j = 1; j < nCol; j++) {
+            CubicSpline1D* spline1D;
+            for (i = 1; i < nRow; i++) {
+                table2x[IDX(i - 1, 0, 2)] = TABLE_COL0(i);
+                table2x[IDX(i - 1, 1, 2)] = TABLE(i, j);
+            }
+            spline1D = cubicSpline1DInit(table2x, nRow - 1, 2, &cols, 1);
+            if (NULL == spline1D) {
+                free(table2y);
+                free(table2x);
+                free(d2z_dxdy);
+                free(dz_dy);
+                free(dz_dx);
+                return NULL;
+            }
+            for (i = 0; i < nRow - 2; i++) {
+                const double* c = spline1D[i];
+                dz_dx[IDX(i, j - 1, nCol - 1)] = c[2];
+            }
+            {
+                const double* c = spline1D[nRow - 3];
+                const double t = TABLE_COL0(nRow - 1) - TABLE_COL0(nRow - 2);
+                dz_dx[IDX(nRow - 2, j - 1, nCol - 1)] = (3*c[0]*t + 2*c[1])*t + c[2];
+            }
+            spline1DClose(&spline1D);
+        }
+
+        for (i = 1; i < nRow; i++) {
+            CubicSpline1D* spline1D;
+            for (j = 1; j < nCol; j++) {
+                table2y[IDX(j - 1, 0, 2)] = TABLE_ROW0(j);
+                table2y[IDX(j - 1, 1, 2)] = TABLE(i, j);
+            }
+            spline1D = cubicSpline1DInit(table2y, nCol - 1, 2, &cols, 1);
+            if (NULL == spline1D) {
+                free(table2y);
+                free(table2x);
+                free(d2z_dxdy);
+                free(dz_dy);
+                free(dz_dx);
+                return NULL;
+            }
+            for (j = 0; j < nCol - 2; j++) {
+                const double* c = spline1D[j];
+                dz_dy[IDX(i - 1, j, nCol - 1)] = c[2];
+            }
+            {
+                const double* c = spline1D[nCol - 3];
+                const double t = TABLE_ROW0(nCol - 1) - TABLE_ROW0(nCol - 2);
+                dz_dy[IDX(i - 1, nCol - 2, nCol - 1)] = (3*c[0]*t + 2*c[1])*t + c[2];
+            }
+            spline1DClose(&spline1D);
+        }
+
+        for (j = 1; j < nCol; j++) {
+            CubicSpline1D* spline1D;
+            for (i = 1; i < nRow; i++) {
+                table2x[IDX(i - 1, 0, 2)] = TABLE_COL0(i);
+                table2x[IDX(i - 1, 1, 2)] = dz_dy[IDX(i - 1, j - 1, nCol - 1)];
+            }
+            spline1D = cubicSpline1DInit(table2x, nRow - 1, 2, &cols, 1);
+            if (NULL == spline1D) {
+                free(table2y);
+                free(table2x);
+                free(d2z_dxdy);
+                free(dz_dy);
+                free(dz_dx);
+                return NULL;
+            }
+            for (i = 0; i < nRow - 2; i++) {
+                const double* c = spline1D[i];
+                d2z_dxdy[IDX(i, j - 1, nCol - 1)] = c[2];
+            }
+            {
+                const double* c = spline1D[nRow - 3];
+                const double t = TABLE_COL0(nRow - 1) - TABLE_COL0(nRow - 2);
+                d2z_dxdy[IDX(nRow - 2, j - 1, nCol - 1)] = (3*c[0]*t + 2*c[1])*t + c[2];
+            }
+            spline1DClose(&spline1D);
+        }
+
+        free(table2y);
+        free(table2x);
+
+        /* Actually there is no need for consecutive memory */
+        spline = (CubicSpline2D*)malloc((nRow - 2)*(nCol - 2)*sizeof(CubicSpline2D));
+        if (NULL == spline) {
+            free(dz_dx);
+            free(dz_dy);
+            free(d2z_dxdy);
+            return NULL;
+        }
+
+        /* Calculation of the 15(16) coefficients per grid */
+        for (i = 0; i < nRow - 2; i++) {
+            const double dx = TABLE_COL0(i + 2) - TABLE_COL0(i + 1);
+            const double dx_2 = dx*dx;
+            const double dx_3 = dx_2*dx;
+            for (j = 0; j < nCol - 2; j++) {
+                const double z00 = TABLE(i + 1, j + 1);
+                const double z01 = TABLE(i + 1, j + 2);
+                const double z10 = TABLE(i + 2, j + 1);
+                const double z11 = TABLE(i + 2, j + 2);
+                const double dy = TABLE_ROW0(j + 2) - TABLE_ROW0(j + 1);
+                const double dy_2 = dy*dy;
+                const double dy_3 = dy_2*dy;
+                double zx00, zx01, zx10, zx11;
+                double zy00, zy01, zy10, zy11;
+                double zxy00, zxy01, zxy10, zxy11;
+                double t1, t2, t3, t4, t5, t6, t7, t8, t9;
+                double t10, t11, t12, t13, t14;
+                double* c = spline[IDX(i, j, nCol - 2)];
+
+                c[11] = dz_dx[IDX(i, j, nCol - 1)];
+                zx00 = c[11]*dx;
+                zx01 = dz_dx[IDX(i, j + 1, nCol - 1)]*dx;
+                zx10 = dz_dx[IDX(i + 1, j, nCol - 1)]*dx;
+                zx11 = dz_dx[IDX(i + 1, j + 1, nCol - 1)]*dx;
+                c[14] = dz_dy[IDX(i, j, nCol - 1)];
+                zy00 = c[14]*dy;
+                zy01 = dz_dy[IDX(i, j + 1, nCol - 1)]*dy;
+                zy10 = dz_dy[IDX(i + 1, j, nCol - 1)]*dy;
+                zy11 = dz_dy[IDX(i + 1, j + 1, nCol - 1)]*dy;
+                c[10] = d2z_dxdy[IDX(i, j, nCol - 1)];
+                zxy00 = c[10]*dx*dy;
+                zxy01 = d2z_dxdy[IDX(i, j + 1, nCol - 1)]*dx*dy;
+                zxy10 = d2z_dxdy[IDX(i + 1, j, nCol - 1)]*dx*dy;
+                zxy11 = d2z_dxdy[IDX(i + 1, j + 1, nCol - 1)]*dx*dy;
+                t1 = z00 - z10;
+                t2 = zx00 + zx10;
+                t3 = zy00 - zy10;
+                t4 = zy11 - zy01;
+                t5 = zxy00 + zxy10;
+                t6 = zxy11 + zxy01;
+                t7 = 2*zx00 + zx10;
+                t8 = 2*zxy00 + zxy10;
+                t9 = zxy11 + 2*zxy01;
+                t10 = zx00 - zx01;
+                t11 = z00 - z01;
+                t12 = t1 + (z11 - z01);
+                t13 = t3 - t4;
+                t4 = 2*t3 - t4;
+                t14 = 2*t12 + (t2 - (zx11 + zx01));
+                t12 = 3*t12 + (t7 - (zx11 + 2*zx01));
+                c[0] = (2*t14 + (2*t13 + (t5 + t6)))/(dx_3*dy_3);
+                c[1] = -(3*t14 + (2*t4 + (2*t5 + t6)))/(dx_3*dy_2);
+                c[2] = (2*t3 + t5)/(dx_3*dy);
+                c[3] = (2*t1 + t2)/dx_3;
+                c[4] = -(2*t12 + (3*t13 + (t8 + t9)))/(dx_2*dy_3);
+                c[5] = (3*t12 + (3*t4 + (2*t8 + t9)))/(dx_2*dy_2);
+                c[6] = -(3*t3 + t8)/(dx_2*dy);
+                c[7] = -(3*t1 + t7)/dx_2;
+                c[8] = (2*t10 + (zxy00 + zxy01))/(dx*dy_3);
+                c[9] = -(3*t10 + (2*zxy00 + zxy01))/(dx*dy_2);
+                c[12] = (2*t11 + (zy00 + zy01))/dy_3;
+                c[13] = -(3*t11 + (2*zy00 + zy01))/dy_2;
+                /* No need to store the absolute term z00 */
+                /* c[15] = z00; */
+            }
+        }
+
+        free(dz_dx);
+        free(dz_dy);
+        free(d2z_dxdy);
+    }
+    return spline;
+}
+
+static void spline2DClose(CubicSpline2D** spline) {
     if (NULL != spline && NULL != *spline) {
         free(*spline);
         *spline = NULL;

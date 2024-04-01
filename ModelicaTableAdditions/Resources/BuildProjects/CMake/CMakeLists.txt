@@ -21,4 +21,11 @@ set(CMAKE_INSTALL_LIBDIR "${CMAKE_INSTALL_PREFIX}/Library/${MODELICA_PLATFORM_NA
 
 include(compiler_options.cmake)
 include(options.cmake)
+
+if(BUILD_TESTING)
+  enable_testing()
+  include(CTest)
+  include(test.cmake)
+endif()
+
 include(src.cmake)

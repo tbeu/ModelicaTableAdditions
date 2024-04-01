@@ -7,5 +7,5 @@ option(MODELICA_SHARE_TABLE_DATA "Store shared table arrays (read from file) in 
 # Option to deep-copy table arrays
 option(MODELICA_COPY_TABLE_DATA "Deep-copy table arrays (passed as array)" ON)
 
-# Option to add a dummy function "usertab"
-option(MODELICA_DUMMY_FUNCTION_USERTAB "Add a dummy usertab function" OFF)
+# Option to add a dummy function "usertabadditions"
+option(MODELICA_DUMMY_FUNCTION_USERTAB "Add a dummy usertabadditions function" OFF)

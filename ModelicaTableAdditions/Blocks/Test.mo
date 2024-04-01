@@ -121,7 +121,7 @@ package Test "Test models"
       tableOnFile=true,
       fileName=Modelica.Utilities.Files.loadResource("modelica://ModelicaTableAdditions/Resources/Data/Weather/weather.epw"),
       columns={EPWCols.'dry bulb temperature', EPWCols.'normal solar'},
-      smoothness=Modelica.Blocks.Types.Smoothness.ModifiedContinuousDerivative,
+      smoothness=ModelicaTableAdditions.Blocks.Types.Smoothness.ModifiedContinuousDerivative,
       extrapolation=Modelica.Blocks.Types.Extrapolation.HoldLastPoint,
       shiftTime=1800)
       annotation (Placement(transformation(extent={{-80,40},{-60,60}})));
@@ -149,7 +149,7 @@ package Test "Test models"
       fileName=Modelica.Utilities.Files.loadResource("modelica://ModelicaTableAdditions/Resources/Data/Weather/weather.csv"),
       columns={7},
       nHeaderLines=1,
-      smoothness=Modelica.Blocks.Types.Smoothness.ModifiedContinuousDerivative,
+      smoothness=ModelicaTableAdditions.Blocks.Types.Smoothness.ModifiedContinuousDerivative,
       extrapolation=Modelica.Blocks.Types.Extrapolation.HoldLastPoint,
       timeScale=3600,
       shiftTime=1800)

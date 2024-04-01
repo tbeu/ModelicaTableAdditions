@@ -511,10 +511,6 @@ double* ModelicaIOAdditions_readRealTable(_In_z_ const char* fileName,
     return table;
 }
 
-void ModelicaIOAdditions_freeRealTable(double* table) {
-    free(table);
-}
-
 static double* readMatTable(_In_z_ const char* fileName, _In_z_ const char* tableName,
                             _Out_ size_t* m, _Out_ size_t* n) {
     double* table = NULL;
@@ -2099,3 +2095,7 @@ static void transpose(_Inout_ double* table, size_t nRow, size_t nCol) {
 #endif
 
 #endif
+
+void ModelicaIOAdditions_freeRealTable(double* table) {
+    free(table);
+}

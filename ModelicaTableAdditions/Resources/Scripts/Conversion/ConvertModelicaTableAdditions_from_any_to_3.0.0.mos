@@ -1,0 +1,6 @@
+convertModifiers({"ModelicaTableAdditions.Blocks.Sources.CombiTimeTable",
+                  "ModelicaTableAdditions.Blocks.Tables.CombiTable1Ds",
+                  "ModelicaTableAdditions.Blocks.Tables.CombiTable1Dv",
+                  "ModelicaTableAdditions.Blocks.Tables.CombiTable2Ds",
+                  "ModelicaTableAdditions.Blocks.Tables.CombiTable2Dv"},
+                 {"smoothness"}, {"smoothness=ModelicaTableAdditions.Blocks.Types.Smoothness(Integer(%smoothness%))"}, true);
