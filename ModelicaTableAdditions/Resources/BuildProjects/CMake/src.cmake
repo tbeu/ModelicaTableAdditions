@@ -29,31 +29,32 @@ elseif(MSVC)
   add_definitions(-D_CRT_SECURE_NO_WARNINGS /W3)
 endif()
 
-include_directories("${MODELICA_RESOURCES_DIR}/C-Sources/parson")
+set(MODELICA_TABLE_ADDITIONS_SOURCE_DIR "${MODELICA_TABLE_ADDITIONS_RESOURCES_DIR}/C-Sources")
+include_directories("${MODELICA_TABLE_ADDITIONS_SOURCE_DIR}/parson")
 
 set(TABLES_SOURCES
-  "${MODELICA_RESOURCES_DIR}/C-Sources/ModelicaTableAdditions.c"
-  "${MODELICA_RESOURCES_DIR}/C-Sources/ModelicaTableAdditions.h"
-  "${MODELICA_RESOURCES_DIR}/C-Sources/ModelicaTableAdditionsUsertab.c"
-  "${MODELICA_RESOURCES_DIR}/C-Sources/ModelicaMatIO.h"
-  "${MODELICA_RESOURCES_DIR}/C-Sources/gconstructor.h"
-  "${MODELICA_RESOURCES_DIR}/C-Sources/stdint_msvc.h"
-  "${MODELICA_RESOURCES_DIR}/C-Sources/stdint_wrap.h"
-  "${MODELICA_RESOURCES_DIR}/C-Sources/uthash.h"
+  "${MODELICA_TABLE_ADDITIONS_SOURCE_DIR}/ModelicaTableAdditions.c"
+  "${MODELICA_TABLE_ADDITIONS_SOURCE_DIR}/ModelicaTableAdditions.h"
+  "${MODELICA_TABLE_ADDITIONS_SOURCE_DIR}/ModelicaTableAdditionsUsertab.c"
+  "${MODELICA_TABLE_ADDITIONS_SOURCE_DIR}/ModelicaMatIO.h"
+  "${MODELICA_TABLE_ADDITIONS_SOURCE_DIR}/gconstructor.h"
+  "${MODELICA_TABLE_ADDITIONS_SOURCE_DIR}/stdint_msvc.h"
+  "${MODELICA_TABLE_ADDITIONS_SOURCE_DIR}/stdint_wrap.h"
+  "${MODELICA_TABLE_ADDITIONS_SOURCE_DIR}/uthash.h"
   "${MODELICA_UTILITIES_INCLUDE_DIR}/ModelicaUtilities.h"
 )
 
 set(IO_SOURCES
-  "${MODELICA_RESOURCES_DIR}/C-Sources/ModelicaIOAdditions.c"
-  "${MODELICA_RESOURCES_DIR}/C-Sources/ModelicaIOAdditions.h"
-  "${MODELICA_RESOURCES_DIR}/C-Sources/ModelicaMatIO.h"
-  "${MODELICA_RESOURCES_DIR}/C-Sources/parson/parson.h"
+  "${MODELICA_TABLE_ADDITIONS_SOURCE_DIR}/ModelicaIOAdditions.c"
+  "${MODELICA_TABLE_ADDITIONS_SOURCE_DIR}/ModelicaIOAdditions.h"
+  "${MODELICA_TABLE_ADDITIONS_SOURCE_DIR}/ModelicaMatIO.h"
+  "${MODELICA_TABLE_ADDITIONS_SOURCE_DIR}/parson/parson.h"
   "${MODELICA_UTILITIES_INCLUDE_DIR}/ModelicaUtilities.h"
 )
 
 set(PARSON_SOURCES
-  "${MODELICA_RESOURCES_DIR}/C-Sources/parson/parson.c"
-  "${MODELICA_RESOURCES_DIR}/C-Sources/parson/parson.h"
+  "${MODELICA_TABLE_ADDITIONS_SOURCE_DIR}/parson/parson.c"
+  "${MODELICA_TABLE_ADDITIONS_SOURCE_DIR}/parson/parson.h"
 )
 
 add_library(ModelicaTableAdditions STATIC ${TABLES_SOURCES})

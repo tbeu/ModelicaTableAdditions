@@ -1,4 +1,4 @@
-#include "../../ModelicaTableAdditions/Resources/C-Sources/ModelicaTableAdditions.h"
+#include "../C-Sources/ModelicaTableAdditions.h"
 
 #include <gtest/gtest.h>
 

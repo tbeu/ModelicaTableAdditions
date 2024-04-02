@@ -45,8 +45,8 @@ void ModelicaWarning(const char *string) {
 void ModelicaError(const char *string) {
     fputs(string, stderr);
     fputc('\n', stderr);
-	ADD_FAILURE();
-	abort();
+    ADD_FAILURE();
+    abort();
 }
 
 void ModelicaFormatMessage(const char *string, ...) {
@@ -80,6 +80,6 @@ void ModelicaVFormatWarning(const char *string, va_list args) {
 
 void ModelicaVFormatError(const char *string, va_list args) {
     vfprintf(stderr, string, args);
-	ADD_FAILURE();
-	abort();
+    ADD_FAILURE();
+    abort();
 }
