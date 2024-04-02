@@ -1211,6 +1211,7 @@ static double* readEpwTable(_In_z_ const char* fileName, _In_z_ const char* tabl
         }
 
         /* Use the data at first recorded time for time equal to 0s */
+        table[0] = 0;
         memcpy(&table[1], &table[31], 29*sizeof(double));
 
         /* One hour off if minute fields are available */
