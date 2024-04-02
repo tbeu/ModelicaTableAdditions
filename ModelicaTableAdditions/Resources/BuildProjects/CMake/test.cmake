@@ -35,6 +35,7 @@ if(EXISTS "${MODELICA_TABLE_ADDITIONS_TEST_DIR}")
     target_link_libraries(Test${TEST} PRIVATE
       ModelicaTableAdditions
       ModelicaIOAdditions
+      parson
       gtest
     )
     if(UNIX)

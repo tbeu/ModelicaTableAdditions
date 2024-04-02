@@ -74,7 +74,7 @@ if(MODELICA_DUMMY_FUNCTION_USERTAB OR BUILD_TESTING)
   target_compile_definitions(ModelicaTableAdditions PRIVATE -DDUMMY_FUNCTION_USERTAB=1)
 endif()
 if(BUILD_TESTING)
-  target_compile_definitions(ModelicaIOAdditions PRIVATE -DNO_FILE_SYSTEM=1)
+  target_compile_definitions(ModelicaIOAdditions PRIVATE -DNO_MATIO=1)
 endif()
 
 install(

@@ -188,7 +188,9 @@ double* ModelicaIOAdditions_readRealTable(_In_z_ const char* fileName,
 #include <xlocale.h>
 #endif
 #endif
+#if !defined(NO_MATIO)
 #include "ModelicaMatIO.h"
+#endif
 #include "parson.h"
 
 /* The standard way to detect POSIX is to check _POSIX_VERSION,
@@ -224,6 +226,7 @@ double* ModelicaIOAdditions_readRealTable(_In_z_ const char* fileName,
 #endif
 #endif
 
+#if !defined(NO_MATIO)
 typedef struct MatIO {
     mat_t* mat; /* Pointer to MAT-file */
     matvar_t* matvar; /* Pointer to MAT-file variable for data */
@@ -244,6 +247,7 @@ static void readMatIO(_In_z_ const char* fileName, _In_z_ const char* matrixName
 static void readRealMatIO(_In_z_ const char* fileName, _In_z_ const char* matrixName,
                           _Inout_ MatIO* matio);
   /* Read a real variable from a MATLAB MAT-file using MatIO functions */
+#endif
 
 static double* readCsvTable(_In_z_ const char* fileName, _In_z_ const char* tableName,
                             _Out_ size_t* m, _Out_ size_t* n, _In_z_ const char* delimiter,
@@ -287,168 +291,6 @@ static void transpose(_Inout_ double* table, size_t nRow, size_t nCol) MODELICA_
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wtautological-compare"
 #endif
-
-void ModelicaIOAdditions_readMatrixSizes(_In_z_ const char* fileName,
-                                _In_z_ const char* matrixName,
-                                _Out_ int* dim) {
-    MatIO matio = {NULL, NULL, NULL};
-
-    dim[0] = 0;
-    dim[1] = 0;
-
-    readRealMatIO(fileName, matrixName, &matio);
-    if (NULL != matio.matvar) {
-        matvar_t* matvar = matio.matvar;
-
-        dim[0] = (int)matvar->dims[0];
-        dim[1] = (int)matvar->dims[1];
-    }
-
-    Mat_VarFree(matio.matvarRoot);
-    (void)Mat_Close(matio.mat);
-}
-
-void ModelicaIOAdditions_readRealMatrix(_In_z_ const char* fileName,
-                               _In_z_ const char* matrixName,
-                               _Inout_ double* matrix, size_t m, size_t n,
-                               int verbose) {
-    MatIO matio = {NULL, NULL, NULL};
-    int readError = 0;
-
-    if (verbose == 1) {
-        /* Print info message, that matrix / file is loading */
-        ModelicaFormatMessage("... loading \"%s\" from \"%s\"\n",
-            matrixName, fileName);
-    }
-
-    readRealMatIO(fileName, matrixName, &matio);
-    if (NULL != matio.matvar) {
-        matvar_t* matvar = matio.matvar;
-
-        /* Check if number of rows matches */
-        if (m != matvar->dims[0]) {
-            Mat_VarFree(matio.matvarRoot);
-            (void)Mat_Close(matio.mat);
-            ModelicaFormatError(
-                "Cannot read %lu rows of array \"%s(%lu,%lu)\" "
-                "from file \"%s\"\n", (unsigned long)m, matrixName,
-                (unsigned long)matvar->dims[0], (unsigned long)matvar->dims[1],
-                fileName);
-            return;
-        }
-
-        /* Check if number of columns matches */
-        if (n != matvar->dims[1]) {
-            Mat_VarFree(matio.matvarRoot);
-            (void)Mat_Close(matio.mat);
-            ModelicaFormatError(
-                "Cannot read %lu columns of array \"%s(%lu,%lu)\" "
-                "from file \"%s\"\n", (unsigned long)n, matrixName,
-                (unsigned long)matvar->dims[0], (unsigned long)matvar->dims[1],
-                fileName);
-            return;
-        }
-
-        {
-            int start[2] = {0, 0};
-            int stride[2] = {1, 1};
-            int edge[2];
-            edge[0] = (int)matvar->dims[0];
-            edge[1] = (int)matvar->dims[1];
-            readError = Mat_VarReadData(matio.mat, matvar, matrix, start, stride, edge);
-        }
-    }
-
-    Mat_VarFree(matio.matvarRoot);
-    (void)Mat_Close(matio.mat);
-
-    if (readError == 0 && NULL != matrix) {
-        /* Array is stored column-wise -> need to transpose */
-        transpose(matrix, m, n);
-    }
-    else {
-        ModelicaFormatError(
-            "Error when reading numeric data of matrix \"%s(%lu,%lu)\" "
-            "from file \"%s\"\n", matrixName, (unsigned long)m,
-            (unsigned long)n, fileName);
-    }
-}
-
-int ModelicaIOAdditions_writeRealMatrix(_In_z_ const char* fileName,
-                               _In_z_ const char* matrixName,
-                               _In_ double* matrix, size_t m, size_t n,
-                               int append,
-                               _In_z_ const char* version) {
-    int status;
-    mat_t* mat;
-    matvar_t* matvar;
-    size_t dims[2];
-    double* aT;
-    enum mat_ft matv;
-    enum matio_compression matc;
-
-    if ((0 != strcmp(version, "4")) && (0 != strcmp(version, "6")) && (0 != strcmp(version, "7")) && (0 != strcmp(version, "7.3"))) {
-        ModelicaFormatError("Invalid version %s for file \"%s\"\n", version, fileName);
-        return 0;
-    }
-    if (0 == strcmp(version, "4")) {
-        matv = MAT_FT_MAT4;
-        matc = MAT_COMPRESSION_NONE;
-    }
-    else if (0 == strcmp(version, "7.3")) {
-        matv = MAT_FT_MAT73;
-        matc = MAT_COMPRESSION_ZLIB;
-    }
-    else if (0 == strcmp(version, "7")) {
-        matv = MAT_FT_MAT5;
-        matc = MAT_COMPRESSION_ZLIB;
-    }
-    else {
-        matv = MAT_FT_MAT5;
-        matc = MAT_COMPRESSION_NONE;
-    }
-
-    if (append == 0) {
-        mat = Mat_CreateVer(fileName, NULL, matv);
-        if (NULL == mat) {
-            ModelicaFormatError("Not possible to newly create file \"%s\"\n(maybe version 7.3 not supported)\n", fileName);
-            return 0;
-        }
-    } else {
-        mat = Mat_Open(fileName, (int)MAT_ACC_RDWR | matv);
-        if (NULL == mat) {
-            ModelicaFormatError("Not possible to open file \"%s\"\n", fileName);
-            return 0;
-        }
-    }
-
-    /* MAT file array is stored column-wise -> need to transpose */
-    aT = (double*)malloc(m*n*sizeof(double));
-    if (NULL == aT) {
-        (void)Mat_Close(mat);
-        ModelicaError("Memory allocation error\n");
-        return 0;
-    }
-    memcpy(aT, matrix, m*n*sizeof(double));
-    transpose(aT, n, m);
-
-    if (append != 0) {
-        (void)Mat_VarDelete(mat, matrixName);
-    }
-
-    dims[0] = m;
-    dims[1] = n;
-    matvar = Mat_VarCreate(matrixName, MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, aT, MAT_F_DONT_COPY_DATA);
-    status = Mat_VarWrite(mat, matvar, matc);
-    Mat_VarFree(matvar);
-    (void)Mat_Close(mat);
-    free(aT);
-    if (status != 0) {
-        ModelicaFormatError("Cannot write variable \"%s\" to \"%s\"\n", matrixName, fileName);
-        return 0;
-    }
-    return 1;
-}
 
 double* ModelicaIOAdditions_readRealTable(_In_z_ const char* fileName,
                                  _In_z_ const char* tableName,
@@ -494,7 +336,9 @@ double* ModelicaIOAdditions_readRealTable(_In_z_ const char* fileName,
     }
 
     if (isMatExt == 1) {
+#if !defined(NO_MATIO)
         table = readMatTable(fileName, tableName, m, n);
+#endif
     }
     else if (isCsvExt == 1) {
         table = readCsvTable(fileName, tableName, m, n, delimiter, nHeaderLines);
@@ -511,6 +355,7 @@ double* ModelicaIOAdditions_readRealTable(_In_z_ const char* fileName,
     return table;
 }
 
+#if !defined(NO_MATIO)
 static double* readMatTable(_In_z_ const char* fileName, _In_z_ const char* tableName,
                             _Out_ size_t* m, _Out_ size_t* n) {
     double* table = NULL;
@@ -741,6 +586,7 @@ static void readRealMatIO(_In_z_ const char* fileName,
         }
     }
 }
+#endif
 
 static int IsNumber(char* token) {
     int foundExponentSign = 0;
