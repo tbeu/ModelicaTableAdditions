@@ -124,6 +124,8 @@ TEST(CombiTable2D, Bicubic_2) {
     for (size_t i = 0; i < 7; ++i) {
         const auto y = ModelicaTableAdditions_CombiTable2D_getValue(table, u1[i], u2[i]);
         EXPECT_NEAR(y, y_expected[i], 1e-10);
+        const auto yt = ModelicaTableAdditions_CombiTable2D_getValue(table, u2[i], u1[i]);
+        EXPECT_NEAR(yt, y_expected[i], 1e-10);
     }
     ModelicaTableAdditions_CombiTable2D_close(table);
 }
