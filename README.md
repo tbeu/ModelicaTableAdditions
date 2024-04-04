@@ -12,7 +12,14 @@ ModelicaTableAdditions is an extension of the CombiTable blocks of the [Modelica
 An overview of the library is provided in
 
 > Thomas Beutlich and Dietmar Winkler. Efficient Parameterization of Modelica Models. In: _Proceedings of
-the 14th International Modelica Conference_. Ed. by Martin Sjölund, Lena Buffoni, Adrian Pop, and Lennart Ochel. Linköping, Sweden, September 2021. DOI: [10.3384/ecp21181141](https://doi.org/10.3384/ecp21181141).
+the 14th International Modelica Conference_. Ed. by Martin Sjölund, Lena Buffoni, Adrian Pop, and Lennart Ochel. Linköping, Sweden, September 2021.
+DOI: [10.3384/ecp21181141](https://doi.org/10.3384/ecp21181141).
+
+Some more implementation details have been published earlier in 
+
+> Thomas Beutlich, Gerd Kurzbach und Uwe Schnabel. Remarks on the Implementation of the Modelica Standard Tables. In: _Proceedings of
+the 10th International Modelica Conference_. Ed. by Hubertus Tummescheit and Karl-Erik Årzén. Lund, Sweden, March 2014.
+DOI: [10.3384/ecp14096893](https://doi.org/10.3384/ecp14096893).
 
 ### Main features
 
