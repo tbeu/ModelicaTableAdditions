@@ -24,11 +24,15 @@ set(MODELICA_TABLE_ADDITIONS_TEST_DIR "${MODELICA_TABLE_ADDITIONS_RESOURCES_DIR}
 if(EXISTS "${MODELICA_TABLE_ADDITIONS_TEST_DIR}")
   set(MODELICA_TESTS
     Tables
+    TablesFromCsvFile
+    TablesFromEpwFile
+    TablesFromJsonFile
   )
   foreach(TEST ${MODELICA_TESTS})
     add_executable(Test${TEST}
       "${MODELICA_TABLE_ADDITIONS_TEST_DIR}/${TEST}.cc"
       "${MODELICA_TABLE_ADDITIONS_TEST_DIR}/Common.cc"
+      "${MODELICA_TABLE_ADDITIONS_TEST_DIR}/Constants.h"
     )
     target_compile_features(Test${TEST} PRIVATE cxx_std_17)
     set_target_properties(Test${TEST} PROPERTIES FOLDER "Test" CXX_EXTENSIONS OFF)

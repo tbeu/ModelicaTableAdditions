@@ -1,5 +1,6 @@
 #include "../C-Sources/ModelicaTableAdditions.h"
-
+#include "Constants.h"
+#include <array>
 #include <gtest/gtest.h>
 
 static double tab[4] = { 0.0, 1.0, 1.0, 2.0 };
@@ -20,10 +21,12 @@ int usertabadditions(char* tableName, int nipo, int dim[], int* colWise, double*
 namespace
 {
 
-TEST(CombiTimeTable, Usertab) {
+TEST(CombiTimeTable, Usertab_Linear_2x2) {
     double dummy = 0.0;
-    int cols[1] = { 2 };
-    void *table = ModelicaTableAdditions_CombiTimeTable_init2("NoName", "abc", &dummy, 0, 0, 0.0, cols, 1, 1, 3, 0.0, 3, 1);
+    constexpr const auto cols = std::array<int, 1>{2};
+    void *table = ModelicaTableAdditions_CombiTimeTable_init2(
+        no_name, "abc", &dummy, 0, 0, 0.0, const_cast<int*>(cols.data()), cols.size(),
+        smooth_linear, extrapol_periodic, 0.0, time_events_always, verbose_off);
     EXPECT_TRUE(table != nullptr);
     const auto tmin = ModelicaTableAdditions_CombiTimeTable_minimumTime(table);
     EXPECT_NEAR(tmin, 0.0, 1e-10);
@@ -35,7 +38,7 @@ TEST(CombiTimeTable, Usertab) {
     ModelicaTableAdditions_CombiTimeTable_close(table);
 }
 
-TEST(CombiTable2D, Bilinear_1) {
+TEST(CombiTable2D, Bilinear_5x5_Symmetric) {
     constexpr const size_t nRows = 5;
     constexpr const size_t nCols = 5;
     double data[nRows*nCols] = {
@@ -45,7 +48,8 @@ TEST(CombiTable2D, Bilinear_1) {
         2.0, 1.2, 1.3, 1.4, 1.5,
         3.0, 1.3, 1.4, 1.5, 1.6
     };
-    auto *table = ModelicaTableAdditions_CombiTable2D_init2("", "", data, nRows, nCols, 1, 4, 0);
+    auto table = ModelicaTableAdditions_CombiTable2D_init2(
+        no_name, no_name, data, nRows, nCols, smooth_linear, extrapol_error, verbose_off);
     EXPECT_TRUE(table != nullptr);
     const double u[] = { 0.0, 0.5, 1.0, 1.5, 2.5, 3.0 };
     const double y_expected[] = { 1.0, 1.1, 1.2, 1.3, 1.5, 1.6 };
@@ -56,7 +60,7 @@ TEST(CombiTable2D, Bilinear_1) {
     ModelicaTableAdditions_CombiTable2D_close(table);
 }
 
-TEST(CombiTable2D, Bilinear_2) {
+TEST(CombiTable2D, Bilinear_5x5) {
     constexpr const size_t nRows = 5;
     constexpr const size_t nCols = 5;
     double data[nRows*nCols] ={
@@ -66,7 +70,8 @@ TEST(CombiTable2D, Bilinear_2) {
         2.0, 1.5, 1.6, 1.7, 1.9,
         3.0, 1.6, 1.9, 2.2, 2.3
     };
-    auto *table = ModelicaTableAdditions_CombiTable2D_init2("", "", data, nRows, nCols, 1, 4, 0);
+    auto table = ModelicaTableAdditions_CombiTable2D_init2(
+        no_name, no_name, data, nRows, nCols, smooth_linear, extrapol_error, verbose_off);
     EXPECT_TRUE(table != nullptr);
     const double u1[] = { 0.0, 0.5, 1.0, 1.5, 2.5, 3.0, 0.265371, 2.13849, 1.621140, 1.22198, 0.724681, 0.0596087 };
     const double u2[] = { 0.0, 0.5, 1.0, 1.5, 2.5, 3.0, 1.395400, 1.64760, 0.824957, 2.41108, 2.986190, 1.3648500 };
@@ -79,7 +84,7 @@ TEST(CombiTable2D, Bilinear_2) {
     ModelicaTableAdditions_CombiTable2D_close(table);
 }
 
-TEST(CombiTable2D, Bicubic_1) {
+TEST(CombiTable2D, Bicubic_5x5_Symmetric) {
     constexpr const size_t nRows = 5;
     constexpr const size_t nCols = 5;
     double data[nRows*nCols] = {
@@ -89,7 +94,8 @@ TEST(CombiTable2D, Bicubic_1) {
         2.0, 1.2, 1.3, 1.4, 1.5,
         3.0, 1.3, 1.4, 1.5, 1.6
     };
-    auto *table = ModelicaTableAdditions_CombiTable2D_init2("", "", data, nRows, nCols, 7, 4, 0);
+    auto table = ModelicaTableAdditions_CombiTable2D_init2(
+        no_name, no_name, data, nRows, nCols, smooth_cubic, extrapol_error, verbose_off);
     EXPECT_TRUE(table != nullptr);
     const double u[] = { 1.0, 1.5, 2.0 };
     const double y_expected[] = { 1.2, 1.3, 1.4 };
@@ -100,7 +106,7 @@ TEST(CombiTable2D, Bicubic_1) {
     ModelicaTableAdditions_CombiTable2D_close(table);
 }
 
-TEST(CombiTable2D, Bicubic_2) {
+TEST(CombiTable2D, Bicubic_9x9_Symmetric) {
     constexpr const size_t nRows = 9;
     constexpr const size_t nCols = 9;
     double data[nRows*nCols] = {
@@ -114,7 +120,8 @@ TEST(CombiTable2D, Bicubic_2) {
         7,  7, 14, 21, 28, 35, 42,  7, 56,
         8,  8,  8, 24,  8, 40, 24, 56,  8
     };
-    auto *table = ModelicaTableAdditions_CombiTable2D_init2("", "", data, nRows, nCols, 7, 4, 0);
+    auto table = ModelicaTableAdditions_CombiTable2D_init2(
+        no_name, no_name, data, nRows, nCols, smooth_cubic, extrapol_error, verbose_off);
     EXPECT_TRUE(table != nullptr);
     const double u1[] = { 1.4, 2.3, 4.7, 3.3, 7.5, 6.6, 5.1 };
     const double u2[] = { 1.0, 1.8, 1.9, 2.5, 2.7, 4.1, 3.3 };
@@ -130,7 +137,7 @@ TEST(CombiTable2D, Bicubic_2) {
     ModelicaTableAdditions_CombiTable2D_close(table);
 }
 
-TEST(CombiTable2D, Bicubic_3) {
+TEST(CombiTable2D, Bicubic_9x11_Original) {
     constexpr const size_t nRows = 9;
     constexpr const size_t nCols = 11;
     double data[nRows*nCols] = {
@@ -144,7 +151,8 @@ TEST(CombiTable2D, Bicubic_3) {
         14, 7, 14, 21, 28, 35, 42,  7, 56, 21, 22,
         16, 8,  8, 24,  8, 40, 24, 56,  8, 23, 24
     };
-    auto *table = ModelicaTableAdditions_CombiTable2D_init2("", "", data, nRows, nCols, 7, 4, 0);
+    auto table = ModelicaTableAdditions_CombiTable2D_init2(
+        no_name, no_name, data, nRows, nCols, smooth_cubic, extrapol_error, verbose_off);
     EXPECT_TRUE(table != nullptr);
     const double u1[] = { 1.0, 1.8, 1.9, 2.5, 2.7, 4.1, 3.3 };
     const double u2[] = { 1.4, 2.3, 9.7, 3.3, 9.5, 6.6, 5.1 };
@@ -158,7 +166,7 @@ TEST(CombiTable2D, Bicubic_3) {
     ModelicaTableAdditions_CombiTable2D_close(table);
 }
 
-TEST(CombiTable2D, Bicubic_4) {
+TEST(CombiTable2D, Bicubic_9x11_Transposed) {
     constexpr const size_t nRows = 11;
     constexpr const size_t nCols = 9;
     double data[nRows*nCols] = {
@@ -174,7 +182,8 @@ TEST(CombiTable2D, Bicubic_4) {
         9,  9,  11, 13, 15, 17, 19, 21, 23,
         10, 10, 12, 14, 16, 18, 20, 22, 24
     };
-    auto *table = ModelicaTableAdditions_CombiTable2D_init2("", "", data, nRows, nCols, 7, 4, 0);
+    auto table = ModelicaTableAdditions_CombiTable2D_init2(
+        no_name, no_name, data, nRows, nCols, smooth_cubic, extrapol_error, verbose_off);
     EXPECT_TRUE(table != nullptr);
     const double u1[] = { 1.4, 2.3, 9.7, 3.3, 9.5, 6.6, 5.1 };
     const double u2[] = { 1.0, 1.8, 1.9, 2.5, 2.7, 4.1, 3.3 };
