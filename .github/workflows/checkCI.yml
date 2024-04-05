@@ -42,26 +42,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 5
-      - name: Configure (w/o tests)
-        run: |
-          if [ "${{ matrix.compiler }}" == "msvc" ]; then
-            cmake -S "$SRCDIR" -B build -DMODELICA_UTILITIES_INCLUDE_DIR="$TESTDIR" -DBUILD_TESTING=OFF -DMODELICA_DEBUG_TIME_EVENTS=OFF
-          elif [ "${{ matrix.compiler }}" == "mingw" ]; then
-            cmake -S "$SRCDIR" -B build -DMODELICA_UTILITIES_INCLUDE_DIR="$TESTDIR" -DBUILD_TESTING=OFF -DMODELICA_DEBUG_TIME_EVENTS=OFF -DCMAKE_BUILD_TYPE=${{ matrix.configuration }} -G "MinGW Makefiles"
-          else
-            cmake -S "$SRCDIR" -B build -DMODELICA_UTILITIES_INCLUDE_DIR="$TESTDIR" -DBUILD_TESTING=OFF -DMODELICA_DEBUG_TIME_EVENTS=OFF -DCMAKE_BUILD_TYPE=${{ matrix.configuration }} -DCMAKE_C_FLAGS="-std=c89 -Wall -Wextra"
-          fi
-        env:
-          SRCDIR: ${{ github.workspace }}/ModelicaTableAdditions/Resources
-          TESTDIR: ${{ github.workspace }}/ModelicaTableAdditions/Resources/Test
-      - name: Build with ${{ matrix.compiler }}
-        run: |
-          if [ "${{ matrix.compiler }}" == "msvc" ]; then
-            cmake --build build --config ${{ matrix.configuration }}
-          else
-            cmake --build build -- -j8
-          fi
-      - name: Configure (with tests)
+      - name: Configure
         run: |
           if [ "${{ matrix.compiler }}" == "msvc" ]; then
             cmake -S "$SRCDIR" -B build -DMODELICA_UTILITIES_INCLUDE_DIR="$TESTDIR" -DBUILD_TESTING=ON -DMODELICA_DEBUG_TIME_EVENTS=ON
@@ -102,21 +83,7 @@ jobs:
             gcc-g++
             make
             ninja
-      - name: Configure (w/o tests)
-        run: |
-          export PATH=/usr/bin:$PATH
-          cmake -S "$(cygpath ${SRCDIR})" -B build -DMODELICA_UTILITIES_INCLUDE_DIR="$(cygpath ${TESTDIR})" -DBUILD_TESTING=OFF -DMODELICA_DEBUG_TIME_EVENTS=OFF -DCMAKE_BUILD_TYPE=Debug -G Ninja
-        shell: C:\cygwin\bin\bash.exe -eo pipefail -o igncr '{0}'
-        env:
-          CYGWIN_NOWINPATH: 1
-          SRCDIR: ${{ github.workspace }}/ModelicaTableAdditions/Resources
-          TESTDIR: ${{ github.workspace }}/ModelicaTableAdditions/Resources/Test
-      - name: Build with gcc
-        run: |
-          export PATH=/usr/bin:$PATH
-          cmake --build build -- -j8
-        shell: C:\cygwin\bin\bash.exe -eo pipefail -o igncr '{0}'
-      - name: Configure (with tests)
+      - name: Configure
         run: |
           export PATH=/usr/bin:$PATH
           cmake -S "$(cygpath ${SRCDIR})" -B build -DMODELICA_UTILITIES_INCLUDE_DIR="$(cygpath ${TESTDIR})" -DBUILD_TESTING=ON -DMODELICA_DEBUG_TIME_EVENTS=ON -DCMAKE_BUILD_TYPE=Debug -G Ninja
