@@ -63,6 +63,8 @@ if(EXISTS "${MODELICA_TABLE_ADDITIONS_TEST_DIR}")
     TablesFromCsvFile
     TablesFromEpwFile
     TablesFromJsonFile
+    TablesFromMatFile
+    TablesFromMosFile
   )
   foreach(TEST ${MODELICA_TESTS})
     add_executable(Test${TEST}
