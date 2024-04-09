@@ -10,7 +10,7 @@ TEST(CombiTable1D, Linear_47x2) {
     double dummy = 0.0;
     constexpr const auto cols = std::array<int, 1>{2};
     auto table = ModelicaTableAdditions_CombiTable1D_init3(
-        "../Data/Tables/test.csv", "dummy", &dummy, 0, 0, const_cast<int*>(cols.data()), cols.size(),
+        "../Data/Tables/test.csv", "dummy", &dummy, 0, 0, cols.data(), cols.size(),
         smooth_linear, extrapol_error, verbose_on, delimiter_comma, 1);
     const auto umin = ModelicaTableAdditions_CombiTable1D_minimumAbscissa(table);
     EXPECT_NEAR(umin, 0.0, 1e-10);

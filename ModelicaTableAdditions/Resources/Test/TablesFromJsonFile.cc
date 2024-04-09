@@ -10,7 +10,7 @@ TEST(CombiTable1D, Akima_47x2) {
     double dummy = 0.0;
     constexpr const auto cols = std::array<int, 1>{2};
     auto table = ModelicaTableAdditions_CombiTable1D_init2(
-        "../Data/Tables/test.json", "tab1", &dummy, 0, 0, const_cast<int*>(cols.data()), cols.size(),
+        "../Data/Tables/test.json", "tab1", &dummy, 0, 0, cols.data(), cols.size(),
         smooth_akima, extrapol_error, verbose_on);
     const auto umin = ModelicaTableAdditions_CombiTable1D_minimumAbscissa(table);
     EXPECT_NEAR(umin, 0.0, 1e-10);
