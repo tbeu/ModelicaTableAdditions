@@ -15,7 +15,7 @@ An overview of the library is provided in
 the 14th International Modelica Conference_. Ed. by Martin Sjölund, Lena Buffoni, Adrian Pop, and Lennart Ochel. Linköping, Sweden, September 2021.
 DOI: [10.3384/ecp21181141](https://doi.org/10.3384/ecp21181141).
 
-Some more implementation details have been published earlier in 
+Some more implementation details have been published earlier in
 
 > Thomas Beutlich, Gerd Kurzbach and Uwe Schnabel. Remarks on the Implementation of the Modelica Standard Tables. In: _Proceedings of
 the 10th International Modelica Conference_. Ed. by Hubertus Tummescheit and Karl-Erik Årzén. Lund, Sweden, March 2014.
@@ -60,7 +60,7 @@ ModelicaTableAdditions is released under the terms of the Simplified BSD License
 
 Use the following BibTeX lines to cite the ModelicaTableAdditions library.
 
-```
+```bibtex
 @InProceedings{ModelicaTableAdditions,
   title = {{Efficient Parameterization of Modelica Models}},
   author = {Beutlich, Thomas and Winkler, Dietmar},
