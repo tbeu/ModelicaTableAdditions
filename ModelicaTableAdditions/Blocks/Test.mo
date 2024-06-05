@@ -106,7 +106,7 @@ package Test "Test models"
 
   model TestWeatherEPWFile "Weather data from EPW file"
     extends Modelica.Icons.Example;
-    constant Modelica.Units.SI.EnergyFluence unitEnergyFluence = 1;
+    constant Modelica.Units.SI.EnergyFluence unitEnergyFluence = 1 annotation(HideResult=true);
     record EPWCols "Column indices of EPW file"
       constant Integer 'dry bulb temperature' = 2 "EPW index for dry bulb temperature in degC";
       constant Integer 'dew point temperature' = 3 "EPW index for dew point temperature in degC";
