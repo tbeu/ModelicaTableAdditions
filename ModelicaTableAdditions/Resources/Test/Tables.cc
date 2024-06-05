@@ -53,7 +53,7 @@ TEST(CombiTable2D, Bilinear_5x5_Symmetric) {
     EXPECT_TRUE(table != nullptr);
     constexpr const double u[] = { 0.0, 0.5, 1.0, 1.5, 2.5, 3.0 };
     constexpr const double y_expected[] = { 1.0, 1.1, 1.2, 1.3, 1.5, 1.6 };
-    for (size_t i = 0; i < 3; ++i) {
+    for (size_t i = 0; i < 6; ++i) {
         const auto y = ModelicaTableAdditions_CombiTable2D_getValue(table, u[i], u[i]);
         EXPECT_NEAR(y, y_expected[i], 1e-10);
     }
