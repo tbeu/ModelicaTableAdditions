@@ -33,3 +33,5 @@ FAQ text
 LICENSE text
 Makefile text
 README text
+
+*.mo linguist-language=Modelica
