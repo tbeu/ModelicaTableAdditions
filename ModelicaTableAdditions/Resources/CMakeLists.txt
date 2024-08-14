@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.15)
+cmake_minimum_required(VERSION 3.21)
 
 if(POLICY CMP0091)
   cmake_policy(SET CMP0091 NEW)
@@ -12,7 +12,6 @@ project(Modelica_Table_Additions C)
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 include(BuildProjects/CMake/Modelica_platform.cmake)
-include(BuildProjects/CMake/Modelica_utilities.cmake)
 
 set(MODELICA_TABLE_ADDITIONS_RESOURCES_DIR "${CMAKE_SOURCE_DIR}")
 set(CMAKE_INSTALL_PREFIX "${MODELICA_TABLE_ADDITIONS_RESOURCES_DIR}" CACHE PATH "Library installation prefix path (don't change)" FORCE)
@@ -25,7 +24,10 @@ include(BuildProjects/CMake/options.cmake)
 
 if(BUILD_TESTING)
   enable_testing()
-  include(CTest)
+  if(PROJECT_IS_TOP_LEVEL)
+    include(CTest)
+  endif()
+  include(BuildProjects/CMake/Modelica_utilities.cmake)
   include(BuildProjects/CMake/test.cmake)
 endif()
 

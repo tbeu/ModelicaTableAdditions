@@ -1,4 +1,4 @@
-project(${CMAKE_PROJECT_NAME}Tests CXX)
+project(${CMAKE_PROJECT_NAME} CXX)
 
 # Set up GoogleTest
 include(FetchContent)
@@ -6,7 +6,7 @@ include(FetchContent)
 FetchContent_Declare(
   googletest
   GIT_REPOSITORY https://github.com/google/googletest.git
-  GIT_TAG v1.14.0
+  GIT_TAG v1.15.2
 )
 
 # For Windows: Prevent overriding the parent project's compiler/linker settings
@@ -89,6 +89,11 @@ if(EXISTS "${MODELICA_TABLE_ADDITIONS_TEST_DIR}")
       WORKING_DIRECTORY "${MODELICA_TABLE_ADDITIONS_TEST_DIR}"
     )
   endforeach()
+  configure_file(
+    ${CMAKE_SOURCE_DIR}/BuildProjects/CMake/Modelica_Table_Additions.gta.runsettings.in
+    ${CMAKE_BINARY_DIR}/Modelica_Table_Additions.gta.runsettings
+    @ONLY
+  )
 else()
   message(WARNING
     " Testsuite not found in \"${MODELICA_TABLE_ADDITIONS_TEST_DIR}\"."
