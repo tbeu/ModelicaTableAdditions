@@ -20,6 +20,8 @@ set(INSTALL_GTEST OFF CACHE BOOL "" FORCE)
 
 FetchContent_MakeAvailable(googletest)
 
+set_target_properties(gtest gtest_main PROPERTIES FOLDER "Test/Third-party")
+
 set(MODELICA_TABLE_ADDITIONS_TEST_DIR "${MODELICA_TABLE_ADDITIONS_RESOURCES_DIR}/Test")
 if(EXISTS "${MODELICA_TABLE_ADDITIONS_TEST_DIR}")
   set(MSL_URL https://raw.githubusercontent.com/modelica/ModelicaStandardLibrary/master)
@@ -53,7 +55,7 @@ if(EXISTS "${MODELICA_TABLE_ADDITIONS_TEST_DIR}")
     "${MODELICA_UTILITIES_INCLUDE_DIR}/ModelicaUtilities.h"
   )
   add_library(ModelicaTableAdditionsTestCommon STATIC ${TEST_COMMON_SOURCES})
-  set_target_properties(ModelicaTableAdditionsTestCommon PROPERTIES FOLDER "Test")
+  set_target_properties(ModelicaTableAdditionsTestCommon PROPERTIES FOLDER "Test/Third-party")
   if(MSVC)
     target_compile_options(ModelicaTableAdditionsTestCommon PRIVATE /wd4267)
   endif()

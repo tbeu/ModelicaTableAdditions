@@ -61,6 +61,8 @@ add_library(ModelicaTableAdditions STATIC ${TABLES_SOURCES})
 add_library(ModelicaIOAdditions STATIC ${IO_SOURCES})
 add_library(parson STATIC ${PARSON_SOURCES})
 
+set_target_properties(parson PROPERTIES FOLDER "Third-party")
+
 if(MODELICA_DEBUG_TIME_EVENTS)
   target_compile_definitions(ModelicaTableAdditions PRIVATE -DDEBUG_TIME_EVENTS=1)
 endif()
