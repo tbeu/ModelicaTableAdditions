@@ -9,6 +9,8 @@ endif()
 
 project(Modelica_Table_Additions C)
 
+file(GENERATE OUTPUT .gitignore CONTENT "*")
+
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 include(BuildProjects/CMake/Modelica_platform.cmake)
