@@ -15,12 +15,35 @@ set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 # Disable building GMock
 set(BUILD_GMOCK OFF CACHE BOOL "" FORCE)
 
-# Do not install GTest 
+# Do not install GTest
 set(INSTALL_GTEST OFF CACHE BOOL "" FORCE)
 
 FetchContent_MakeAvailable(googletest)
 
-set_target_properties(gtest gtest_main PROPERTIES FOLDER "Test/Third-party")
+FetchContent_Declare(
+  zlib
+  GIT_REPOSITORY https://github.com/madler/zlib.git
+  GIT_TAG v1.3.1
+)
+
+# Do not build zlib examples
+set(ZLIB_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+
+# Do not install zlib
+set(SKIP_INSTALL_ALL TRUE CACHE BOOL "" FORCE)
+
+FetchContent_MakeAvailable(zlib)
+
+# Patch zlib1.rc file to avoid syntax error
+if(CYGWIN)
+  file(READ "${zlib_SOURCE_DIR}/win32/zlib1.rc" ZLIB_RC_CONTENT)
+  string(REPLACE "	MOVEABLE IMPURE LOADONCALL DISCARDABLE" "" ZLIB_RC_CONTENT "${ZLIB_RC_CONTENT}")
+  file(WRITE "${zlib_SOURCE_DIR}/win32/zlib1.rc" "${ZLIB_RC_CONTENT}")
+endif()
+
+set(ZLIB_INCLUDE_DIR ${zlib_SOURCE_DIR} ${zlib_BINARY_DIR})
+
+set_target_properties(gtest gtest_main zlib zlibstatic PROPERTIES FOLDER "Test/Third-party")
 
 set(MODELICA_TABLE_ADDITIONS_TEST_DIR "${MODELICA_TABLE_ADDITIONS_RESOURCES_DIR}/Test")
 if(EXISTS "${MODELICA_TABLE_ADDITIONS_TEST_DIR}")
@@ -59,6 +82,8 @@ if(EXISTS "${MODELICA_TABLE_ADDITIONS_TEST_DIR}")
   if(MSVC)
     target_compile_options(ModelicaTableAdditionsTestCommon PRIVATE /wd4267)
   endif()
+  target_compile_definitions(ModelicaTableAdditionsTestCommon PRIVATE -DHAVE_ZLIB=1)
+  target_include_directories(ModelicaTableAdditionsTestCommon PRIVATE ${ZLIB_INCLUDE_DIR})
 
   set(MODELICA_TESTS
     Tables
@@ -81,6 +106,7 @@ if(EXISTS "${MODELICA_TABLE_ADDITIONS_TEST_DIR}")
       ModelicaTableAdditionsTestCommon
       parson
       gtest
+      zlibstatic
     )
     if(UNIX)
       target_link_libraries(Test${TEST} PRIVATE m)
