@@ -1,38 +1,72 @@
 project(${CMAKE_PROJECT_NAME} CXX)
 
-# Set up GoogleTest
 include(FetchContent)
 
 FetchContent_Declare(
   googletest
   GIT_REPOSITORY https://github.com/google/googletest.git
   GIT_TAG v1.15.2
+  GIT_SHALLOW TRUE
 )
-
-# For Windows: Prevent overriding the parent project's compiler/linker settings
-set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
-
-# Disable building GMock
-set(BUILD_GMOCK OFF CACHE BOOL "" FORCE)
-
-# Do not install GTest
-set(INSTALL_GTEST OFF CACHE BOOL "" FORCE)
-
-FetchContent_MakeAvailable(googletest)
 
 FetchContent_Declare(
   zlib
   GIT_REPOSITORY https://github.com/madler/zlib.git
   GIT_TAG v1.3.1
+  GIT_SHALLOW TRUE
 )
 
-# Do not build zlib examples
+FetchContent_Declare(
+  hdf5
+  GIT_REPOSITORY https://github.com/HDFGroup/hdf5.git
+  GIT_TAG hdf5_1.14.4.3
+  GIT_SHALLOW TRUE
+)
+
+set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+set(BUILD_GMOCK OFF CACHE BOOL "" FORCE)
+set(INSTALL_GTEST OFF CACHE BOOL "" FORCE)
+
 set(ZLIB_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+set(INSTALL_BIN_DIR ${CMAKE_INSTALL_LIBDIR} CACHE PATH "" FORCE)
+set(INSTALL_LIB_DIR ${CMAKE_INSTALL_LIBDIR} CACHE PATH "" FORCE)
+set(SKIP_INSTALL_ALL OFF CACHE BOOL "" FORCE)
+set(SKIP_INSTALL_FILES ON CACHE BOOL "" FORCE)
+set(SKIP_INSTALL_HEADERS ON CACHE BOOL "" FORCE)
+set(ZLIB_FOUND ON)
+set(ZLIB_USE_EXTERNAL ON)
 
-# Do not install zlib
-set(SKIP_INSTALL_ALL TRUE CACHE BOOL "" FORCE)
+set(HDF5_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+set(HDF5_BUILD_HL_LIB OFF CACHE BOOL "" FORCE)
+set(HDF5_BUILD_PARALLEL_TOOLS OFF CACHE BOOL "" FORCE)
+set(HDF5_BUILD_TOOLS OFF CACHE BOOL "" FORCE)
+set(HDF5_BUILD_UTILS OFF CACHE BOOL "" FORCE)
+set(HDF5_DISABLE_COMPILER_WARNINGS ON CACHE BOOL "" FORCE)
+set(HDF5_ENABLE_ALL_WARNINGS OFF CACHE BOOL "" FORCE)
+set(HDF5_ENABLE_DEPRECATED_SYMBOLS OFF CACHE BOOL "" FORCE)
+set(HDF5_ENABLE_NONSTANDARD_FEATURES OFF CACHE BOOL "" FORCE)
+set(HDF5_ENABLE_SZIP_SUPPORT OFF CACHE BOOL "" FORCE)
+set(HDF5_ENABLE_WARNINGS_AS_ERRORS OFF CACHE BOOL "" FORCE)
+set(HDF5_ENABLE_Z_LIB_SUPPORT ON CACHE BOOL "" FORCE)
+set(HDF5_EXPORTED_TARGETS)
+set(HDF5_EXTERNALLY_CONFIGURED ON CACHE BOOL "" FORCE)
+set(HDF5_INSTALL_NO_DEVELOPMENT ON CACHE BOOL "" FORCE)
+set(HDF5_INSTALL_LIB_DIR ${CMAKE_INSTALL_LIBDIR} CACHE PATH "" FORCE)
+set(HDF5_LIB_DEPENDENCIES zlib)
+set(HDF5_TEST_CPP OFF CACHE BOOL "" FORCE)
+set(HDF5_TEST_EXAMPLES OFF CACHE BOOL "" FORCE)
+set(HDF5_TEST_SERIAL OFF CACHE BOOL "" FORCE)
+set(HDF5_TEST_SWMR OFF CACHE BOOL "" FORCE)
+set(BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
 
-FetchContent_MakeAvailable(zlib)
+FetchContent_MakeAvailable(googletest zlib)
+
+set(ZLIB_INCLUDE_DIR ${zlib_SOURCE_DIR} ${zlib_BINARY_DIR})
+set(ZLIB_INCLUDE_DIRS ${zlib_SOURCE_DIR} ${zlib_BINARY_DIR})
+
+FetchContent_MakeAvailable(hdf5)
+
+set(HDF5_INCLUDE_DIR "${hdf5_SOURCE_DIR}/src" "${hdf5_SOURCE_DIR}/src/H5FDsubfiling" "${hdf5_BINARY_DIR}/src")
 
 # Patch zlib1.rc file to avoid syntax error
 if(CYGWIN)
@@ -41,9 +75,7 @@ if(CYGWIN)
   file(WRITE "${zlib_SOURCE_DIR}/win32/zlib1.rc" "${ZLIB_RC_CONTENT}")
 endif()
 
-set(ZLIB_INCLUDE_DIR ${zlib_SOURCE_DIR} ${zlib_BINARY_DIR})
-
-set_target_properties(gtest gtest_main zlib zlibstatic PROPERTIES FOLDER "Test/Third-party")
+set_target_properties(gtest gtest_main hdf5-static zlib zlibstatic PROPERTIES FOLDER "Test/Third-party")
 
 set(MODELICA_TABLE_ADDITIONS_TEST_DIR "${MODELICA_TABLE_ADDITIONS_RESOURCES_DIR}/Test")
 if(EXISTS "${MODELICA_TABLE_ADDITIONS_TEST_DIR}")
@@ -82,8 +114,8 @@ if(EXISTS "${MODELICA_TABLE_ADDITIONS_TEST_DIR}")
   if(MSVC)
     target_compile_options(ModelicaTableAdditionsTestCommon PRIVATE /wd4267)
   endif()
-  target_compile_definitions(ModelicaTableAdditionsTestCommon PRIVATE -DHAVE_ZLIB=1)
-  target_include_directories(ModelicaTableAdditionsTestCommon PRIVATE ${ZLIB_INCLUDE_DIR})
+  target_compile_definitions(ModelicaTableAdditionsTestCommon PRIVATE -DHAVE_ZLIB=1 -DHAVE_HDF5=1)
+  target_include_directories(ModelicaTableAdditionsTestCommon PRIVATE ${ZLIB_INCLUDE_DIR} ${HDF5_INCLUDE_DIR})
 
   set(MODELICA_TESTS
     Tables
@@ -106,6 +138,7 @@ if(EXISTS "${MODELICA_TABLE_ADDITIONS_TEST_DIR}")
       ModelicaTableAdditionsTestCommon
       parson
       gtest
+      hdf5-static
       zlibstatic
     )
     if(UNIX)

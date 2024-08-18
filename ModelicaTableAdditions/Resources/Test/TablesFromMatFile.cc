@@ -33,7 +33,8 @@ INSTANTIATE_TEST_SUITE_P(
     ::testing::Values(
         std::make_pair("../Data/Tables/test_v4.mat", "tab1"),
         std::make_pair("../Data/Tables/test_v6.mat", "tab1"),
-        std::make_pair("../Data/Tables/test_v7.mat", "tab1"))
+        std::make_pair("../Data/Tables/test_v7.mat", "tab1"),
+        std::make_pair("../Data/Tables/test_v7.3.mat", "tab1"))
 );
 
 } // namespace
