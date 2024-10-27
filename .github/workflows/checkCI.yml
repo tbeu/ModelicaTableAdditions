@@ -13,7 +13,7 @@ jobs:
   build:
     name: build_cmake_${{ matrix.toolchain }}
     runs-on: ${{ matrix.os }}
-    timeout-minutes: 5
+    timeout-minutes: 10
     strategy:
       fail-fast: false
       matrix:
@@ -45,11 +45,11 @@ jobs:
       - name: Configure
         run: |
           if [ "${{ matrix.compiler }}" == "msvc" ]; then
-            cmake -S "$SRCDIR" -B build -DMODELICA_UTILITIES_INCLUDE_DIR="$TESTDIR" -DBUILD_TESTING=ON -DMODELICA_DEBUG_TIME_EVENTS=ON
+            cmake -S "$SRCDIR" -B build -DMODELICA_UTILITIES_INCLUDE_DIR="$TESTDIR" -DMODELICA_DEBUG_TIME_EVENTS=ON
           elif [ "${{ matrix.compiler }}" == "mingw" ]; then
-            cmake -S "$SRCDIR" -B build -DMODELICA_UTILITIES_INCLUDE_DIR="$TESTDIR" -DBUILD_TESTING=ON -DMODELICA_DEBUG_TIME_EVENTS=ON -DCMAKE_BUILD_TYPE=${{ matrix.configuration }} -G "MinGW Makefiles"
+            cmake -S "$SRCDIR" -B build -DMODELICA_UTILITIES_INCLUDE_DIR="$TESTDIR" -DMODELICA_DEBUG_TIME_EVENTS=ON -DCMAKE_BUILD_TYPE=${{ matrix.configuration }} -G "MinGW Makefiles"
           else
-            cmake -S "$SRCDIR" -B build -DMODELICA_UTILITIES_INCLUDE_DIR="$TESTDIR" -DBUILD_TESTING=ON -DMODELICA_DEBUG_TIME_EVENTS=ON -DCMAKE_BUILD_TYPE=${{ matrix.configuration }} -DCMAKE_C_FLAGS="-Wall -Wextra"
+            cmake -S "$SRCDIR" -B build -DMODELICA_UTILITIES_INCLUDE_DIR="$TESTDIR" -DMODELICA_DEBUG_TIME_EVENTS=ON -DCMAKE_BUILD_TYPE=${{ matrix.configuration }} -DCMAKE_C_FLAGS="-Wall -Wextra"
           fi
         env:
           SRCDIR: ${{ github.workspace }}/ModelicaTableAdditions/Resources
@@ -97,7 +97,7 @@ jobs:
       - name: Configure
         run: |
           export PATH=/usr/bin:$PATH
-          cmake -S "$(cygpath ${SRCDIR})" -B build -DMODELICA_UTILITIES_INCLUDE_DIR="$(cygpath ${TESTDIR})" -DBUILD_TESTING=ON -DMODELICA_DEBUG_TIME_EVENTS=ON -DCMAKE_BUILD_TYPE=${{ matrix.configuration }} -G Ninja
+          cmake -S "$(cygpath ${SRCDIR})" -B build -DMODELICA_UTILITIES_INCLUDE_DIR="$(cygpath ${TESTDIR})" -DMODELICA_DEBUG_TIME_EVENTS=ON -DCMAKE_BUILD_TYPE=${{ matrix.configuration }} -G Ninja
         shell: C:\cygwin\bin\bash.exe -eo pipefail -o igncr '{0}'
         env:
           CYGWIN_NOWINPATH: 1
