@@ -5,6 +5,138 @@ package Sources
 
   extends Modelica.Icons.SourcesPackage;
 
+  block TimeTable
+    "Generate a (possibly discontinuous) signal by linear interpolation in a table"
+    parameter Real table[:, 2]=fill(0.0, 0, 2)
+      "Table matrix (time = first column; e.g., table=[0, 0; 1, 1; 2, 4])"
+      annotation(Dialog(groupImage="modelica://Modelica/Resources/Images/Blocks/Sources/TimeTable.png"));
+    parameter Modelica.Units.SI.Time timeScale(
+      min=Modelica.Constants.eps)=1 "Time scale of first table column"
+      annotation (Evaluate=true);
+    extends Modelica.Blocks.Interfaces.SignalSource;
+    parameter Modelica.Units.SI.Time shiftTime=startTime
+      "Shift time of first table column";
+  protected
+    CombiTimeTable combiTimeTable(
+      final tableOnFile=false,
+      final table=table,
+      final smoothness=ModelicaTableAdditions.Blocks.Types.Smoothness.LinearSegments,
+      final extrapolation=Modelica.Blocks.Types.Extrapolation.LastTwoPoints,
+      final timeScale=timeScale,
+      final offset={offset},
+      final startTime=startTime,
+      final shiftTime=shiftTime);
+  algorithm 
+    if size(table, 1) > 1 then
+      assert(not (table[1, 1] > 0.0 or table[1, 1] < 0.0), "The first point in time has to be set to 0, but is table[1,1] = " + String(table[1, 1]));
+    end if;
+  equation 
+    assert(size(table, 1) > 0, "No table values defined.");
+    y = combiTimeTable.y[1];
+    annotation (
+      Icon(coordinateSystem(
+          preserveAspectRatio=true,
+          extent={{-100,-100},{100,100}}), graphics={
+          Line(points={{-80,68},{-80,-80}}, color={192,192,192}),
+          Polygon(
+            points={{-80,90},{-88,68},{-72,68},{-80,90}},
+            lineColor={192,192,192},
+            fillColor={192,192,192},
+            fillPattern=FillPattern.Solid),
+          Line(points={{-90,-70},{82,-70}}, color={192,192,192}),
+          Polygon(
+            points={{90,-70},{68,-62},{68,-78},{90,-70}},
+            lineColor={192,192,192},
+            fillColor={192,192,192},
+            fillPattern=FillPattern.Solid),
+          Rectangle(
+            extent={{-48,70},{2,-50}},
+            lineColor={255,255,255},
+            fillColor={192,192,192},
+            fillPattern=FillPattern.Solid),
+          Line(points={{-48,-50},{-48,70},{52,70},{52,-50},{-48,-50},{-48,-20},
+                {52,-20},{52,10},{-48,10},{-48,40},{52,40},{52,70},{2,70},{2,-51}}),
+          Text(
+            extent={{-150,-150},{150,-110}},
+            textString="offset=%offset")}),
+          Documentation(info="<html>
+<p>
+This block generates an output signal by <strong>linear interpolation</strong> in
+a table. The time points and function values are stored in a matrix
+<strong>table[i,j]</strong>, where the first column table[:,1] contains the
+time points and the second column contains the data to be interpolated.
+The table interpolation has the following properties:
+</p>
+<ul>
+<li>The interpolation interval is found by a linear search where the interval used in the
+    last call is used as start interval.</li>
+<li>The time points need to be <strong>monotonically increasing</strong>.</li>
+<li><strong>Discontinuities</strong> are allowed, by providing the same
+    time point twice in the table.</li>
+<li>Values <strong>outside</strong> of the table range, are computed by
+    <strong>extrapolation</strong> through the last or first two points of the
+    table.</li>
+<li>If the table has only <strong>one row</strong>, no interpolation is performed and
+    the function value is just returned independently of the actual time instant.</li>
+<li>Via parameters <strong>shiftTime</strong> and <strong>offset</strong> the curve defined
+    by the table can be shifted both in time and in the ordinate value.
+    The time instants stored in the table are therefore <strong>relative</strong>
+    to <strong>shiftTime</strong>.</li>
+<li>If time &lt; startTime, no interpolation is performed and the offset
+    is used as ordinate value for the output.</li>
+<li>If the table has more than one row, the first point in time <strong>always</strong> has to be set to <strong>0</strong>, e.g.,
+    <strong>table=[1,1;2,2]</strong> is <strong>illegal</strong>. If you want to
+    shift the time table in time use the <strong>shiftTime</strong> parameter instead.</li>
+<li>The table is implemented in a numerically sound way by
+    generating <strong>time events</strong> at interval boundaries.
+    This generates continuously differentiable values for the integrator.</li>
+<li>Via parameter <strong>timeScale</strong> the first column of the table array can
+    be scaled, e.g., if the table array is given in hours (instead of seconds)
+    <strong>timeScale</strong> shall be set to 3600.</li>
+</ul>
+<p>
+Example:
+</p>
+<blockquote><pre>
+   table = [0, 0;
+            1, 0;
+            1, 1;
+            2, 4;
+            3, 9;
+            4, 16];
+If, e.g., time = 1.0, the output y =  0.0 (before event), 1.0 (after event)
+    e.g., time = 1.5, the output y =  2.5,
+    e.g., time = 2.0, the output y =  4.0,
+    e.g., time = 5.0, the output y = 23.0 (i.e., extrapolation).
+</pre></blockquote>
+
+<div>
+<img src=\"modelica://Modelica/Resources/Images/Blocks/Sources/TimeTable.png\"
+     alt=\"TimeTable.png\">
+</div>
+
+</html>",
+        revisions="<html>
+<h4>Release Notes</h4>
+<ul>
+<li><em>Oct. 21, 2002</em>
+       by Christian Schweiger:<br>
+       Corrected interface from
+<blockquote><pre>
+parameter Real table[:, :]=[0, 0; 1, 1; 2, 4];
+</pre></blockquote>
+       to
+<blockquote><pre>
+parameter Real table[:, <strong>2</strong>]=[0, 0; 1, 1; 2, 4];
+</pre></blockquote>
+       </li>
+<li><em>Nov. 7, 1999</em>
+       by <a href=\"http://www.robotic.dlr.de/Martin.Otter/\">Martin Otter</a>:<br>
+       Realized.</li>
+</ul>
+</html>"));
+  end TimeTable;
+
   block CombiTimeTable
     "Table look-up with respect to time and various interpolation and extrapolation methods (data from matrix/file)"
     import ModelicaTableAdditions.Blocks.Tables.Internal;
