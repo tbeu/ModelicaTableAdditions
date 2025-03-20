@@ -80,9 +80,10 @@ set_target_properties(gtest gtest_main hdf5-static zlib zlibstatic PROPERTIES FO
 set(MODELICA_TABLE_ADDITIONS_TEST_DIR "${MODELICA_TABLE_ADDITIONS_RESOURCES_DIR}/Test")
 if(EXISTS "${MODELICA_TABLE_ADDITIONS_TEST_DIR}")
   set(MSL_URL https://raw.githubusercontent.com/modelica/ModelicaStandardLibrary/master)
+  set(MSL_URL_LEGACY https://raw.githubusercontent.com/modelica/ModelicaStandardLibrary/7ac7906706d000c1fc67a5812cd866618b63ffaf)
   if(NOT EXISTS "${CMAKE_CURRENT_BINARY_DIR}/ModelicaTableAdditionsTestCommon")
     file(DOWNLOAD
-      "${MSL_URL}/.CI/Test/Common.c"
+      "${MSL_URL_LEGACY}/.CI/Test/Common.c"
       "${CMAKE_CURRENT_BINARY_DIR}/ModelicaTableAdditionsTestCommon/Common.c")
     file(DOWNLOAD
       "${MSL_URL}/Modelica/Resources/C-Sources/ModelicaMatIO.c"
