@@ -16,7 +16,10 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 include(BuildProjects/CMake/Modelica_platform.cmake)
 
 set(MODELICA_TABLE_ADDITIONS_RESOURCES_DIR "${CMAKE_SOURCE_DIR}")
-set(CMAKE_INSTALL_PREFIX "${MODELICA_TABLE_ADDITIONS_RESOURCES_DIR}" CACHE PATH "Library installation prefix path (don't change)" FORCE)
+# Do not override CMAKE_INSTALL_PREFIX if it was set by the user. CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT is automatically provided by CMake.
+if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+  set(CMAKE_INSTALL_PREFIX "${MODELICA_TABLE_ADDITIONS_RESOURCES_DIR}" CACHE PATH "Library installation prefix path (don't change)" FORCE)
+endif()
 
 get_modelica_platform_name_with_compiler_version(MODELICA_PLATFORM_NAME)
 set(CMAKE_INSTALL_LIBDIR "${CMAKE_INSTALL_PREFIX}/Library/${MODELICA_PLATFORM_NAME}" CACHE PATH "Library installation path (don't change)" FORCE)
