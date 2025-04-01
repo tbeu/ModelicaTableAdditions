@@ -9,7 +9,7 @@ package Sources
     "Generate a (possibly discontinuous) signal by linear interpolation in a table"
     parameter Real table[:, 2]=fill(0.0, 0, 2)
       "Table matrix (time = first column; e.g., table=[0, 0; 1, 1; 2, 4])"
-      annotation(Dialog(groupImage="modelica://Modelica/Resources/Images/Blocks/Sources/TimeTable.png"));
+      annotation (Dialog(groupImage="modelica://Modelica/Resources/Images/Blocks/Sources/TimeTable.png"));
     parameter Modelica.Units.SI.Time timeScale(
       min=Modelica.Constants.eps)=1 "Time scale of first table column"
       annotation (Evaluate=true);
@@ -25,41 +25,15 @@ package Sources
       final timeScale=timeScale,
       final offset={offset},
       final startTime=startTime,
-      final shiftTime=shiftTime);
+      final shiftTime=shiftTime) annotation (Placement(transformation(extent={{-10,-10},{10,10}})));;
   algorithm 
     if size(table, 1) > 1 then
       assert(not (table[1, 1] > 0.0 or table[1, 1] < 0.0), "The first point in time has to be set to 0, but is table[1,1] = " + String(table[1, 1]));
     end if;
   equation 
     assert(size(table, 1) > 0, "No table values defined.");
-    y = combiTimeTable.y[1];
-    annotation (
-      Icon(coordinateSystem(
-          preserveAspectRatio=true,
-          extent={{-100,-100},{100,100}}), graphics={
-          Line(points={{-80,68},{-80,-80}}, color={192,192,192}),
-          Polygon(
-            points={{-80,90},{-88,68},{-72,68},{-80,90}},
-            lineColor={192,192,192},
-            fillColor={192,192,192},
-            fillPattern=FillPattern.Solid),
-          Line(points={{-90,-70},{82,-70}}, color={192,192,192}),
-          Polygon(
-            points={{90,-70},{68,-62},{68,-78},{90,-70}},
-            lineColor={192,192,192},
-            fillColor={192,192,192},
-            fillPattern=FillPattern.Solid),
-          Rectangle(
-            extent={{-48,70},{2,-50}},
-            lineColor={255,255,255},
-            fillColor={192,192,192},
-            fillPattern=FillPattern.Solid),
-          Line(points={{-48,-50},{-48,70},{52,70},{52,-50},{-48,-50},{-48,-20},
-                {52,-20},{52,10},{-48,10},{-48,40},{52,40},{52,70},{2,70},{2,-51}}),
-          Text(
-            extent={{-150,-150},{150,-110}},
-            textString="offset=%offset")}),
-          Documentation(info="<html>
+    connect(combiTimeTable.y[1], y) annotation (Line(points={{11,0},{110,0}}, color={0,0,127}));
+    annotation (Documentation(info="<html>
 <p>
 This block generates an output signal by <strong>linear interpolation</strong> in
 a table. The time points and function values are stored in a matrix
@@ -134,7 +108,32 @@ parameter Real table[:, <strong>2</strong>]=[0, 0; 1, 1; 2, 4];
        by <a href=\"http://www.robotic.dlr.de/Martin.Otter/\">Martin Otter</a>:<br>
        Realized.</li>
 </ul>
-</html>"));
+</html>"),
+      Icon(coordinateSystem(
+          preserveAspectRatio=true,
+          extent={{-100,-100},{100,100}}), graphics={
+          Line(points={{-80,68},{-80,-80}}, color={192,192,192}),
+          Polygon(
+            points={{-80,90},{-88,68},{-72,68},{-80,90}},
+            lineColor={192,192,192},
+            fillColor={192,192,192},
+            fillPattern=FillPattern.Solid),
+          Line(points={{-90,-70},{82,-70}}, color={192,192,192}),
+          Polygon(
+            points={{90,-70},{68,-62},{68,-78},{90,-70}},
+            lineColor={192,192,192},
+            fillColor={192,192,192},
+            fillPattern=FillPattern.Solid),
+          Rectangle(
+            extent={{-48,70},{2,-50}},
+            lineColor={255,255,255},
+            fillColor={192,192,192},
+            fillPattern=FillPattern.Solid),
+          Line(points={{-48,-50},{-48,70},{52,70},{52,-50},{-48,-50},{-48,-20},
+                {52,-20},{52,10},{-48,10},{-48,40},{52,40},{52,70},{2,70},{2,-51}}),
+          Text(
+            extent={{-150,-150},{150,-110}},
+            textString="offset=%offset")}));
   end TimeTable;
 
   block CombiTimeTable
