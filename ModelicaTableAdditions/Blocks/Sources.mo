@@ -203,8 +203,8 @@ If, e.g., time = 1.0, the output y =  0.0 (before event), 1.0 (after event)
     discrete Real nextTimeEventScaled(start=0, fixed=true)
       "Next scaled time event instant";
     Real timeScaled "Scaled time";
-    final parameter Boolean isCsvExt = if tableOnFile then Modelica.Utilities.Strings.findLast(fileName, ".csv", 0, false) + 3 == Modelica.Utilities.Strings.length(fileName) else false;
-    final parameter Boolean isEpwExt = if tableOnFile then Modelica.Utilities.Strings.findLast(fileName, ".epw", 0, false) + 3 == Modelica.Utilities.Strings.length(fileName) else false;
+    final parameter Boolean isCsvExt = if tableOnFile then Modelica.Utilities.Strings.findLast(fileName, ".csv", 0, false) + 3 == Modelica.Utilities.Strings.length(fileName) else false annotation (HideResult=true);
+    final parameter Boolean isEpwExt = if tableOnFile then Modelica.Utilities.Strings.findLast(fileName, ".epw", 0, false) + 3 == Modelica.Utilities.Strings.length(fileName) else false annotation (HideResult=true);
   equation
     if tableOnFile then
       assert(tableName <> "NoName" or isCsvExt or isEpwExt,

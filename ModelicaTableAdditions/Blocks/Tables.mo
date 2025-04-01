@@ -58,8 +58,8 @@ package Tables
           if tableOnFile then verboseRead else false,
           delimiter,
           nHeaderLines) "External table object";
-    final parameter Boolean isCsvExt = if tableOnFile then Modelica.Utilities.Strings.findLast(fileName, ".csv", 0, false) + 3 == Modelica.Utilities.Strings.length(fileName) else false;
-    final parameter Boolean isEpwExt = if tableOnFile then Modelica.Utilities.Strings.findLast(fileName, ".epw", 0, false) + 3 == Modelica.Utilities.Strings.length(fileName) else false;
+    final parameter Boolean isCsvExt = if tableOnFile then Modelica.Utilities.Strings.findLast(fileName, ".csv", 0, false) + 3 == Modelica.Utilities.Strings.length(fileName) else false annotation (HideResult=true);
+    final parameter Boolean isEpwExt = if tableOnFile then Modelica.Utilities.Strings.findLast(fileName, ".epw", 0, false) + 3 == Modelica.Utilities.Strings.length(fileName) else false annotation (HideResult=true);
   equation
     if tableOnFile then
       assert(tableName <> "NoName" or isCsvExt or isEpwExt,
@@ -330,8 +330,8 @@ MATLAB is a registered trademark of The MathWorks, Inc.
           if tableOnFile then verboseRead else false,
           delimiter,
           nHeaderLines) "External table object";
-    final parameter Boolean isCsvExt = if tableOnFile then Modelica.Utilities.Strings.findLast(fileName, ".csv", 0, false) + 3 == Modelica.Utilities.Strings.length(fileName) else false;
-    final parameter Boolean isEpwExt = if tableOnFile then Modelica.Utilities.Strings.findLast(fileName, ".epw", 0, false) + 3 == Modelica.Utilities.Strings.length(fileName) else false;
+    final parameter Boolean isCsvExt = if tableOnFile then Modelica.Utilities.Strings.findLast(fileName, ".csv", 0, false) + 3 == Modelica.Utilities.Strings.length(fileName) else false annotation (HideResult=true);
+    final parameter Boolean isEpwExt = if tableOnFile then Modelica.Utilities.Strings.findLast(fileName, ".epw", 0, false) + 3 == Modelica.Utilities.Strings.length(fileName) else false annotation (HideResult=true);
   equation
     if tableOnFile then
       assert(tableName <> "NoName" or isCsvExt or isEpwExt,
@@ -991,8 +991,8 @@ MATLAB is a registered trademark of The MathWorks, Inc.
             if tableOnFile then verboseRead else false,
             delimiter,
             nHeaderLines) "External table object";
-      final parameter Boolean isCsvExt = if tableOnFile then Modelica.Utilities.Strings.findLast(fileName, ".csv", 0, false) + 3 == Modelica.Utilities.Strings.length(fileName) else false;
-      final parameter Boolean isEpwExt = if tableOnFile then Modelica.Utilities.Strings.findLast(fileName, ".epw", 0, false) + 3 == Modelica.Utilities.Strings.length(fileName) else false;
+      final parameter Boolean isCsvExt = if tableOnFile then Modelica.Utilities.Strings.findLast(fileName, ".csv", 0, false) + 3 == Modelica.Utilities.Strings.length(fileName) else false annotation (HideResult=true);
+      final parameter Boolean isEpwExt = if tableOnFile then Modelica.Utilities.Strings.findLast(fileName, ".epw", 0, false) + 3 == Modelica.Utilities.Strings.length(fileName) else false annotation (HideResult=true);
     equation
         if tableOnFile then
           if isEpwExt then
