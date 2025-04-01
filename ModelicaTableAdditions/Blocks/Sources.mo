@@ -89,25 +89,6 @@ If, e.g., time = 1.0, the output y =  0.0 (before event), 1.0 (after event)
      alt=\"TimeTable.png\">
 </div>
 
-</html>",
-        revisions="<html>
-<h4>Release Notes</h4>
-<ul>
-<li><em>Oct. 21, 2002</em>
-       by Christian Schweiger:<br>
-       Corrected interface from
-<blockquote><pre>
-parameter Real table[:, :]=[0, 0; 1, 1; 2, 4];
-</pre></blockquote>
-       to
-<blockquote><pre>
-parameter Real table[:, <strong>2</strong>]=[0, 0; 1, 1; 2, 4];
-</pre></blockquote>
-       </li>
-<li><em>Nov. 7, 1999</em>
-       by <a href=\"http://www.robotic.dlr.de/Martin.Otter/\">Martin Otter</a>:<br>
-       Realized.</li>
-</ul>
 </html>"),
       Icon(coordinateSystem(
           preserveAspectRatio=true,
@@ -467,18 +448,6 @@ Other characters, like trailing non comments, are not allowed in the file.
 <p>
 MATLAB is a registered trademark of The MathWorks, Inc.
 </p>
-</html>", revisions="<html>
-<p><strong>Release Notes:</strong></p>
-<ul>
-<li><em>April 09, 2013</em>
-       by Thomas Beutlich:<br>
-       Implemented as external object.</li>
-<li><em>March 31, 2001</em>
-       by <a href=\"http://www.robotic.dlr.de/Martin.Otter/\">Martin Otter</a>:<br>
-       Used CombiTableTime as a basis and added the
-       arguments <strong>extrapolation, columns, startTime</strong>.
-       This allows periodic function definitions.</li>
-</ul>
 </html>"),
       Icon(
       coordinateSystem(preserveAspectRatio=true,
@@ -713,18 +682,6 @@ Other characters, like trailing non comments, are not allowed in the file.
 <p>
 MATLAB is a registered trademark of The MathWorks, Inc.
 </p>
-</html>", revisions="<html>
-<p><strong>Release Notes:</strong></p>
-<ul>
-<li><em>April 09, 2013</em>
-       by Thomas Beutlich:<br>
-       Implemented as external object.</li>
-<li><em>March 31, 2001</em>
-       by <a href=\"http://www.robotic.dlr.de/Martin.Otter/\">Martin Otter</a>:<br>
-       Used CombiTableTime as a basis and added the
-       arguments <strong>extrapolation, columns, startTime</strong>.
-       This allows periodic function definitions.</li>
-</ul>
 </html>"));
   end FileUpdateTimeTable;
 end Sources;
