@@ -25,7 +25,7 @@ package Sources
       final timeScale=timeScale,
       final offset={offset},
       final startTime=startTime,
-      final shiftTime=shiftTime) annotation (Placement(transformation(extent={{-10,-10},{10,10}})));;
+      final shiftTime=shiftTime) annotation (Placement(transformation(extent={{-10,-10},{10,10}})));
   algorithm 
     if size(table, 1) > 1 then
       assert(not (table[1, 1] > 0.0 or table[1, 1] < 0.0), "The first point in time has to be set to 0, but is table[1,1] = " + String(table[1, 1]));
