@@ -44,9 +44,9 @@ jobs:
           fetch-depth: 5
       - name: Configure
         run: |
-          if [ "${{ matrix.compiler }}" == "msvc" ]; then
+          if [ "${{ matrix.toolchain }}" == "windows-msvc" ]; then
             cmake -S "$SRCDIR" -B build -DMODELICA_DEBUG_TIME_EVENTS=ON
-          elif [ "${{ matrix.compiler }}" == "mingw" ]; then
+          elif [ "${{ matrix.toolchain }}" == "windows-mingw" ]; then
             cmake -S "$SRCDIR" -B build -DMODELICA_DEBUG_TIME_EVENTS=ON -DCMAKE_BUILD_TYPE=${{ matrix.configuration }} -G "MinGW Makefiles"
           else
             cmake -S "$SRCDIR" -B build -DMODELICA_DEBUG_TIME_EVENTS=ON -DCMAKE_BUILD_TYPE=${{ matrix.configuration }} -DCMAKE_C_FLAGS="-Wall -Wextra"
@@ -55,7 +55,7 @@ jobs:
           SRCDIR: ${{ github.workspace }}/ModelicaTableAdditions/Resources
       - name: Build with ${{ matrix.compiler }}
         run: |
-          if [ "${{ matrix.compiler }}" == "msvc" ]; then
+          if [ "${{ matrix.toolchain }}" == "windows-msvc" ]; then
             cmake --build build --config ${{ matrix.configuration }}
           else
             cmake --build build -- -j8
@@ -64,7 +64,7 @@ jobs:
         run: ctest --no-tests=error --test-dir build --build-config ${{ matrix.configuration }} --verbose
       - name: Install
         run: |
-          if [ "${{ matrix.compiler }}" == "msvc" ]; then
+          if [ "${{ matrix.toolchain }}" == "windows-msvc" ]; then
             cmake --build build --target install --config ${{ matrix.configuration }}
           else
             cmake --build build --target install
