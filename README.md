@@ -52,6 +52,32 @@ DOI: [10.3384/ecp14096893](https://doi.org/10.3384/ecp14096893).
 * Dependency on the [Modelica Standard Library](https://github.com/modelica/ModelicaStandardLibrary) v4.0.0
 * Tested in [Dymola](http://www.dynasim.se) and [OpenModelica](https://openmodelica.org/)
 
+## Building the external libraries
+
+CMake is recommended as build system, which usually consists of three steps for configuration, build and installation. By default, the CMake project is also configured for testing with CTest. For example,
+
+```console
+git clone https://github.com/tbeu/ModelicaTableAdditions
+cd ModelicaTableAdditions
+cmake -S ./ModelicaTableAdditions/Resources -B .
+cmake --build .
+ctest --test-dir .
+cmake --install .
+```
+
+The following ModelicaTableAdditions specific options for building with CMake are available.
+
+* `MODELICA_COPY_TABLE_DATA:BOOL=ON`
+This flag avoids an undesired memory optimization of shallow-copying the passed table arrays.
+* `MODELICA_DEBUG_TIME_EVENTS:BOOL=OFF`
+This flag enables tracing of time events.
+* `MODELICA_DUMMY_FUNCTION_USERTAB:BOOL=OFF`
+This flag adds a dummy function "usertabadditions".
+* `MODELICA_SHARE_TABLE_DATA:BOOL=ON`
+This flag enables the memory optimization of avoiding redundant copies of table arrays read from file.
+* `MODELICA_BUILD_TESTING:BOOL=ON`
+This option enables the GoogleTest based testsuite for CTest.
+
 ## License
 
 ModelicaTableAdditions is released under the terms of the Simplified BSD License.
