@@ -80,6 +80,7 @@ add_subdirectory("${hdf5_SOURCE_DIR}" "${hdf5_BINARY_DIR}")
 set(HDF5_INCLUDE_DIR "${hdf5_SOURCE_DIR}/src" "${hdf5_SOURCE_DIR}/src/H5FDsubfiling" "${hdf5_BINARY_DIR}/src")
 
 # Patch zlib1.rc file to avoid syntax error
+# See https://github.com/madler/zlib/commit/d20659fc74975e27962655d1b337da8cf3646638
 if(CYGWIN)
   file(READ "${zlib_SOURCE_DIR}/win32/zlib1.rc" ZLIB_RC_CONTENT)
   string(REPLACE "	MOVEABLE IMPURE LOADONCALL DISCARDABLE" "" ZLIB_RC_CONTENT "${ZLIB_RC_CONTENT}")
