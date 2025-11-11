@@ -40,7 +40,7 @@ jobs:
             os: windows-latest
             compiler: mingw
     steps:
-      - name: Checkout code
+      - name: Checkout repository
         uses: actions/checkout@v5
         with:
           fetch-depth: 5
@@ -83,7 +83,7 @@ jobs:
     steps:
       - name: Set git to use LF
         run: git config --global core.autocrlf input
-      - name: Checkout code
+      - name: Checkout repository
         uses: actions/checkout@v5
         with:
           fetch-depth: 5
@@ -123,13 +123,14 @@ jobs:
     timeout-minutes: 5
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - name: Checkout repository
+        uses: actions/checkout@v5
         with:
           fetch-depth: 5
       - name: Setup python environment
         uses: actions/setup-python@v5
         with:
-          python-version: 3.8
+          python-version: 3.13
       - name: Install python packages
         run: |
           pip install --disable-pip-version-check --user pytidylib
@@ -158,7 +159,8 @@ jobs:
     timeout-minutes: 5
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - name: Checkout repository
+        uses: actions/checkout@v5
         with:
           fetch-depth: 5
       - name: Get moparser
@@ -177,13 +179,14 @@ jobs:
     timeout-minutes: 5
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - name: Checkout repository
+        uses: actions/checkout@v5
         with:
           fetch-depth: 5
       - name: Setup python environment
         uses: actions/setup-python@v5
         with:
-          python-version: 3.8
+          python-version: 3.13
       - name: Check deprecated Text.lineColor annotation
         run: |
           echo "::add-matcher::./.github/check_deprecated_line_color.json"
