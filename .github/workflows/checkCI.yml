@@ -35,7 +35,7 @@ jobs:
             os: windows-latest
             compiler: msvc
           - toolchain: windows-mingw
-            os: windows-2022
+            os: windows-latest
             compiler: mingw
     steps:
       - name: Checkout code

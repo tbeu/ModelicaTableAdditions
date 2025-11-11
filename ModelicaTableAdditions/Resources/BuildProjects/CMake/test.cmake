@@ -64,7 +64,18 @@ FetchContent_MakeAvailable(googletest zlib)
 set(ZLIB_INCLUDE_DIR ${zlib_SOURCE_DIR} ${zlib_BINARY_DIR})
 set(ZLIB_INCLUDE_DIRS ${zlib_SOURCE_DIR} ${zlib_BINARY_DIR})
 
-FetchContent_MakeAvailable(hdf5)
+cmake_policy(SET CMP0169 OLD)
+FetchContent_Populate(hdf5)
+
+# Patch H5pubconf.h to avoid build error on MinGW
+# See https://github.com/HDFGroup/hdf5/issues/5885
+if(MINGW)
+  file(READ "${hdf5_SOURCE_DIR}/config/cmake/H5pubconf.h.in" H5_CONF_FILE_CONTENT)
+  string(REPLACE "#cmakedefine H5_HAVE_VASPRINTF @H5_HAVE_VASPRINTF@" "/* patched */" H5_CONF_FILE_CONTENT "${H5_CONF_FILE_CONTENT}")
+  file(WRITE "${hdf5_SOURCE_DIR}/config/cmake/H5pubconf.h.in" "${H5_CONF_FILE_CONTENT}")
+endif()
+
+add_subdirectory("${hdf5_SOURCE_DIR}" "${hdf5_BINARY_DIR}")
 
 set(HDF5_INCLUDE_DIR "${hdf5_SOURCE_DIR}/src" "${hdf5_SOURCE_DIR}/src/H5FDsubfiling" "${hdf5_BINARY_DIR}/src")
 
