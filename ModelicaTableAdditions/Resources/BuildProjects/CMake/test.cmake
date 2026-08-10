@@ -12,7 +12,7 @@ FetchContent_Declare(
 FetchContent_Declare(
   zlib
   GIT_REPOSITORY https://github.com/madler/zlib.git
-  GIT_TAG v1.3.2
+  GIT_TAG e3dc0a85b7032e98380dec011bc8f2c2ee0d8fca
   GIT_SHALLOW TRUE
 )
 
