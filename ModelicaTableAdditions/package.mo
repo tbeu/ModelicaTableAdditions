@@ -11,5 +11,6 @@ package ModelicaTableAdditions "Extension of the CombiTable blocks of the Modeli
       from(
         version={"1.0.0", "1.0.1", "1.0.2", "2.0.0", "2.0.1", "2.0.2", "2.1.0", "2.1.1", "2.2.0", "2.2.1", "2.2.2", "2.2.3", "2.3.0", "2.3.1", "2.3.2"},
         script="modelica://ModelicaTableAdditions/Resources/Scripts/Conversion/ConvertModelicaTableAdditions_from_any_to_3.0.0.mos")),
-    Documentation(info="<html><p>Library <strong>ModelicaTableAdditions</strong> is an extension of the CombiTable blocks of the <a href=\"modelica://Modelica\">Modelica Standard Library</a> to additionally support reading <a href=\"https://en.wikipedia.org/wiki/Comma-separated_values\">CSV</a>, EPW (EnergyPlus Weather) and <a href=\"https://en.wikipedia.org/wiki/JSON\">JSON</a> files. Furthermore, it also features cubic spline interpolation.</p></html>"));
+    Documentation(info="<html><p>Library <strong>ModelicaTableAdditions</strong> is an extension of the CombiTable blocks of the <a href=\"modelica://Modelica\">Modelica Standard Library</a> to additionally support reading <a href=\"https://en.wikipedia.org/wiki/Comma-separated_values\">CSV</a>, EPW (EnergyPlus Weather) and <a href=\"https://en.wikipedia.org/wiki/JSON\">JSON</a> files. Furthermore, it also features cubic spline interpolation.</p></html>"),
+    License="modelica://ModelicaTableAdditions/Resources/Licenses/LICENSE_ModelicaTableAdditions.txt");
 end ModelicaTableAdditions;
