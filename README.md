@@ -49,7 +49,7 @@ DOI: [10.3384/ecp14096893](https://doi.org/10.3384/ecp14096893).
   * Extrapolation triggers an error
 * C (and not C++) code for external functions and objects
 * Cross-platform (Windows and Linux)
-* Dependency on the [Modelica Standard Library](https://github.com/modelica/ModelicaStandardLibrary) v4.0.0
+* Dependency on the [Modelica Standard Library](https://github.com/modelica/ModelicaStandardLibrary) v4.1.0
 * Tested in [Dymola](http://www.dynasim.se) and [OpenModelica](https://openmodelica.org/)
 
 ## Building the external libraries

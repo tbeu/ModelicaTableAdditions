@@ -2,12 +2,13 @@ within ;
 package ModelicaTableAdditions "Extension of the CombiTable blocks of the Modelica Standard Library to additionally support reading CSV, EPW (EnergyPlus Weather) and JSON files"
   extends Modelica.Icons.Package;
   annotation(
-    uses(Modelica(version="4.0.0")),
-    version="3.2.1",
+    uses(Modelica(version="4.1.0")),
+    version="3.2.2",
     conversion(
       noneFromVersion="3.0.0",
       noneFromVersion="3.1.0",
       noneFromVersion="3.2.0",
+      noneFromVersion="3.2.1",
       from(
         version={"1.0.0", "1.0.1", "1.0.2", "2.0.0", "2.0.1", "2.0.2", "2.1.0", "2.1.1", "2.2.0", "2.2.1", "2.2.2", "2.2.3", "2.3.0", "2.3.1", "2.3.2"},
         script="modelica://ModelicaTableAdditions/Resources/Scripts/Conversion/ConvertModelicaTableAdditions_from_any_to_3.0.0.mos")),
